@@ -26,7 +26,7 @@
 
             <StackPanel VerticalAlignment="Center">
                 <Image Width="130" x:Name="reg_logo_img" />
-                <TextBlock Text="Smart Parking App Registration" 
+                <TextBlock Margin="0, 15, 0, 15" Text="Smart Parking App Registration" 
                            HorizontalAlignment="Center" 
                            FontWeight="Light" 
                            FontFamily="arial"
@@ -42,8 +42,9 @@
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"/>
                     <TextBox FontFamily="arial"
+                           MaxLength="35"
                            FontWeight="Light"
-                           Text="{Binding UserName, Mode=TwoWay}"
+                           Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                            FontSize="25"
                            Height="30"
                            MaxWidth="320"
@@ -55,7 +56,7 @@
                            />
                 </StackPanel>
                 <Border
-                    Margin="0, 0, 0, 5"
+                    Margin="0, 0, 0, 8"
                     HorizontalAlignment="Right"
                     Width="320"
                     Height="3">
@@ -72,6 +73,7 @@
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"/>
                     <PasswordBox FontFamily="arial"
+                        MaxLength="35"
                         FontWeight="Light"
                         FontSize="25"
                         Password="password"
@@ -85,12 +87,12 @@
                         />
                 </StackPanel>
                 <Border
-                    Margin="0, 0, 0, 5"
+                    Margin="0, 0, 0, 8"
                     HorizontalAlignment="Right"
                     Width="320"
                     Height="3">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding PasswordColor, Mode=OneWay}"></SolidColorBrush>
+                        <SolidColorBrush Color="{Binding PasswordColor, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></SolidColorBrush>
                     </Border.Background>
                 </Border>
 
@@ -103,6 +105,7 @@
                     HorizontalAlignment="Center"/>
                     <TextBox FontFamily="arial"
                            FontWeight="Light"
+                           MaxLength="35"
                            Text="{Binding CarPlateNumber, Mode=TwoWay}"
                            FontSize="25"
                            Height="30"
@@ -115,7 +118,7 @@
                            />
                 </StackPanel>
                 <Border
-                    Margin="0, 0, 0, 5"
+                    Margin="0, 0, 0, 8"
                     HorizontalAlignment="Right"
                     Width="320"
                     Height="3">
@@ -133,7 +136,8 @@
                     HorizontalAlignment="Center"/>
                     <TextBox FontFamily="arial"
                            FontWeight="Light"
-                           Text="{Binding PhoneNumber, Mode=TwoWay}"
+                           MaxLength="35"
+                           Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                            FontSize="25"
                            Height="30"
                            MaxWidth="320"
@@ -145,7 +149,7 @@
                            />
                 </StackPanel>
                 <Border
-                    Margin="0, 0, 0, 5"
+                    Margin="0, 0, 0, 8"
                     HorizontalAlignment="Right"
                     Width="320"
                     Height="3">
@@ -154,13 +158,12 @@
                     </Border.Background>
                 </Border>
 
-                <StackPanel Orientation="Horizontal" 
+                <StackPanel Margin="0, 15, 0, 0" Orientation="Horizontal" 
                             HorizontalAlignment="Center">
-                    <Button Width="180"
+                    <Button Width="160"
                             Height="35"
                             IsEnabled="{Binding IsBtnRegisterEnabled, Mode=OneWay}"
                             Style="{StaticResource ActionButton}"
-                            Click="{Binding Comm}"
                             HorizontalAlignment="Center"
                             Content="Register"
                             FontSize="25"

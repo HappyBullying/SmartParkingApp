@@ -23,14 +23,31 @@ namespace SmartParkingApp.Client
             main_frame.Content = new Pages.RegistrationPage();
         }
 
-        private void DragWindow(object sender, EventArgs e)
+        private void DragWindow(object sender, MouseButtonEventArgs e)
         {
             DragEnter += (s, t) =>
             {
                 if (WindowState == WindowState.Maximized)
                     WindowState = WindowState.Normal;
             };
-            DragMove();
+            if (e.ClickCount == 1)
+            {
+                DragMove();
+            }
+            if (e.ClickCount == 2)
+            {
+                if (WindowState == WindowState.Maximized)
+                {
+                    WindowState = WindowState.Normal;
+                    WindowMaximize.Content = Resources["WMaximize"];
+                }
+                else
+                {
+                    WindowState = WindowState.Maximized;
+                    WindowMaximize.Content = Resources["WRestore"];
+                }
+            }
+            
         }
 
         private void BtnMinimize_Click(object sender, RoutedEventArgs e)

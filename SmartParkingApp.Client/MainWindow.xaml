@@ -8,6 +8,8 @@
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         WindowStyle="None"
         ResizeMode="CanResize"
+        MinHeight="500" MinWidth="550"
+        
         Height="550" Width="900" Foreground="#FFAFBD">
 
     <WindowChrome.WindowChrome>
@@ -25,14 +27,17 @@
                 <Run Foreground="Black" FontFamily="Arial" FontSize="30">Smart Parking App</Run>
             </TextBlock>
             <StackPanel Margin="0, 2, 2, 2" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="BtnMinimize" Width="40" Click="BtnMinimize_Click">
+                <Button x:Name="BtnMinimize"
+                        Background="#FFAFBD"
+                        Width="40" Click="BtnMinimize_Click" 
+                        BorderThickness="2">
                     <iconPacks:PackIconMaterial 
                     Kind="WindowMinimize" Height="auto" 
                     Opacity="0.7"/>
                 </Button>
-                <Button x:Name="WindowMaximize" Width="40" Click="WindowMaximize_Click" Content="{DynamicResource WMaximize}">
+                <Button x:Name="WindowMaximize" Background="#FFAFBD" BorderThickness="2" Width="40" Click="WindowMaximize_Click" Content="{DynamicResource WMaximize}">
                 </Button>
-                <Button x:Name="WindowClose" Width="40" Click="WindowClose_Click">
+                <Button x:Name="WindowClose" Background="#FFAFBD" BorderThickness="2" Width="40" Click="WindowClose_Click">
                     <iconPacks:PackIconMaterial 
                     Kind="WindowClose" Height="auto" 
                     Opacity="0.7"/>

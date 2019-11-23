@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
@@ -62,7 +63,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _phoneNumberColor = value;
-                OnPropertyChanged("PhoneNumber");
+                OnPropertyChanged("PhoneNumberColor");
             }
         }
         private Color _phoneNumberColor = Colors.Chocolate;
@@ -90,6 +91,18 @@ namespace SmartParkingApp.Client.ViewModels
             {
                 _userName = value;
                 OnPropertyChanged("UserName");
+                Match m = Regex.Match(value, "^[A-Za-z]*[A-Za-z]+[A-Za-z0-9_]*$");
+                if (m.Success)
+                {
+                    UsernameColor = Colors.Chocolate;
+                    _nameReady = true;
+                }
+                else
+                {
+                    UsernameColor = Colors.Red;
+                    _nameReady = false;
+                }
+                EnableRegisterButton();
             }
         }
         private string _userName = "Name";
@@ -117,6 +130,17 @@ namespace SmartParkingApp.Client.ViewModels
             {
                 _carPlateNumber = value;
                 OnPropertyChanged("CarPlateNumber");
+                if (value.Length == 0)
+                {
+                    _carPlateNumberColor = Colors.Red;
+                    _carPlateNumberReady = false;
+                }
+                else
+                {
+                    _carPlateNumberColor = Colors.Chocolate;
+                    _carPlateNumberReady = true;
+                }
+                EnableRegisterButton();
             }
         }
         private string _carPlateNumber = "CarPlateNumber";
@@ -132,9 +156,39 @@ namespace SmartParkingApp.Client.ViewModels
             {
                 _phoneNumber = value;
                 OnPropertyChanged("PhoneNumber");
+                Match m = Regex.Match(value, @"^((\+[0-9])+([0-9]){10,16})$");
+
+                if (m.Success)
+                {
+                    PhoneNumberColor = Colors.Chocolate;
+                    _phoneNumberReady = true;
+                }
+                else
+                {
+                    PhoneNumberColor = Colors.Red;
+                    _phoneNumberReady = false;
+                }
+                EnableRegisterButton();
             }
         }
         private string _phoneNumber = "PhoneNumber";
+        
+        
+        private bool _nameReady = true;
+        private bool _passwordReady = false;
+        private bool _carPlateNumberReady = true;
+        private bool _phoneNumberReady = true;
+        private void EnableRegisterButton()
+        {
+            if (_nameReady && _passwordReady && _carPlateNumberReady && _phoneNumberReady)
+            {
+                IsBtnRegisterEnabled = true;
+            }
+            else
+            {
+                IsBtnRegisterEnabled = false;
+            }
+        }
         /************************************************************************************/
 
 
