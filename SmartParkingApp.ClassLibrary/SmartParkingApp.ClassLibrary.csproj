@@ -44,17 +44,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\LocalJsonDb.cs" />
     <Compile Include="Models\ParkingSession.cs" />
     <Compile Include="Models\Tariff.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="ParkingManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserRoles.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Data\ParkingData.json" />
-    <EmbeddedResource Include="Data\Tariffs.json" />
-    <EmbeddedResource Include="Data\Users.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SmartParkingApp.ClassLibrary;
+using SmartParkingApp.ClassLibrary.Models;
+using SmartParkingApp.Client.Commands;
+using System;
 using System.ComponentModel;
-using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SmartParkingApp.Client.ViewModels
@@ -108,17 +111,28 @@ namespace SmartParkingApp.Client.ViewModels
         private string _userName = "Name";
 
 
-        
+        // Property for password
         public string Password
         {
             get { return _password; }
             set
             {
                 _password = value;
-                OnPropertyChanged("Password");
+                Match m = Regex.Match(value, @"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$");
+                if (m.Success)
+                {
+                    PasswordColor = Colors.Chocolate;
+                    _passwordReady = true;
+                }
+                else
+                {
+                    PasswordColor = Colors.Red;
+                    _passwordReady = false;
+                }
+                EnableRegisterButton();
             }
         }
-        private string _password = "123";
+        private string _password = "";
 
 
 
@@ -174,10 +188,10 @@ namespace SmartParkingApp.Client.ViewModels
         private string _phoneNumber = "PhoneNumber";
         
         
-        private bool _nameReady = true;
+        private bool _nameReady = false;
         private bool _passwordReady = false;
-        private bool _carPlateNumberReady = true;
-        private bool _phoneNumberReady = true;
+        private bool _carPlateNumberReady = false;
+        private bool _phoneNumberReady = false;
         private void EnableRegisterButton()
         {
             if (_nameReady && _passwordReady && _carPlateNumberReady && _phoneNumberReady)
@@ -189,21 +203,74 @@ namespace SmartParkingApp.Client.ViewModels
                 IsBtnRegisterEnabled = false;
             }
         }
+
+        // Register Command
+        public RegisterCommand RegisterUserCommand { get; private set; }
+        public RegisterCommand NavigateToLogin { get; private set; }
+
         /************************************************************************************/
 
 
 
 
-        public RegisterViewModel()
-        {
 
+
+
+
+
+        private readonly string _userRole;
+        private ParkingManager _pkManager;
+        public RegisterViewModel(string userRole, ParkingManager pkm, Action navigateToLogin)
+        {
+            _userRole = userRole;
+            _pkManager = pkm;
+            RegisterUserCommand = new RegisterCommand(Register);
+            NavigateToLogin = new RegisterCommand(navigateToLogin);
         }
 
         
+        private void Register()
+        {
+            // Compute MD5 hash for password
+            MD5 md5 = MD5.Create();
+            byte[] input = Encoding.ASCII.GetBytes(Password);
+            byte[] hash = md5.ComputeHash(input);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++)
+            {
+                // Add letter into full hash string uppercase
+                sb.Append(hash[i].ToString("X2"));
+            }
+
+            // Create new user object
+            User usr = new User
+            {
+                Name = UserName,
+                PasswordHash = sb.ToString(),
+                CarPlateNumber = CarPlateNumber,
+                Phone = PhoneNumber,
+                UserRole = _userRole
+            };
+
+
+            // Try to add user to the json database
+            string result = _pkManager.RegisterNewUser(usr);
+            if (!result.Equals("Successfully"))
+            {
+                IssueWindow iss = new IssueWindow(result);
+                iss.Show();
+            }
+            else
+            {
+                if (NavigateToLogin.CanExecute(result))
+                {
+                    NavigateToLogin.Execute(null);
+                }
+            }
+        }
+
+
         public event PropertyChangedEventHandler PropertyChanged;
-
-
-
         private void OnPropertyChanged(string propName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));

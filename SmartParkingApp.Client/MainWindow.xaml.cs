@@ -1,27 +1,85 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SmartParkingApp.ClassLibrary;
+using SmartParkingApp.Client.Pages;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.IO;
+using System;
+
 
 namespace SmartParkingApp.Client
 {
     public partial class MainWindow : Window
     {
+        private readonly string DataPath;
+        private ParkingManager _pkManager;
+
+        private Action navigateToRegister;
+        private Action navigateToLogin;
+        private Action navigateToMenue;
+
         public MainWindow()
         {
             InitializeComponent();
-            main_frame.Content = new Pages.RegistrationPage();
+            DataPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\SmartParkingApp\\Data";
+            PrepareFiles();
+            _pkManager = new ParkingManager(DataPath);
+
+            // Disable navigation bar in frame
+            main_frame.NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden;
+
+
+            navigateToLogin = new Action(NavigateToLogin);
+            navigateToRegister = new Action(NavigateToRegister);
+            navigateToMenue = new Action(NavigateToMenue);
+
+            main_frame.Content = new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
         }
+
+
+        // Navigates to Register page
+        private void NavigateToRegister()
+        {
+            main_frame.Content = new RegistrationPage(_pkManager, navigateToLogin);
+        }
+        
+        // Navigates to Login page
+        private void NavigateToLogin()
+        {
+            main_frame.Content = new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
+        }
+
+
+        // Navigates to Menue Page
+        private void NavigateToMenue()
+        {
+            //main_frame.Content = new
+        }
+
+        // Prepares json files
+        private void PrepareFiles()
+        {
+            if (!Directory.Exists(DataPath))
+            {
+                Directory.CreateDirectory(DataPath);
+            }
+
+            if (!File.Exists(DataPath + "\\Users.json"))
+            {
+                File.Create(DataPath + "\\Users.json").Close();
+            }
+
+            if (!File.Exists(DataPath + "\\ParkingData.json"))
+            {
+                File.Create(DataPath + "\\ParkingData.json").Close();
+            }
+
+            if(!File.Exists(DataPath + "\\Tariffs.json"))
+            {
+                File.Create(DataPath + "\\Tariffs.json").Close();
+            }
+        }
+
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {

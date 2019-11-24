@@ -1,0 +1,60 @@
+﻿<Window x:Class="SmartParkingApp.Client.IssueWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SmartParkingApp.Client"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Title="IssueWindow" Height="200" Width="350" BorderThickness="2">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="2"></WindowChrome>
+    </WindowChrome.WindowChrome>
+    <Window.BorderBrush>
+        <SolidColorBrush Color="Black" Opacity="0.5"></SolidColorBrush>
+    </Window.BorderBrush>
+    <DockPanel LastChildFill="True">
+        <Grid DockPanel.Dock="Top" Height="35" Background="#FFAFBD" MouseDown="DragWindow">
+            <Grid.Effect>
+                <DropShadowEffect BlurRadius="1" ShadowDepth="1" Color="#FFACACAC"/>
+            </Grid.Effect>
+            <TextBlock HorizontalAlignment="Center" Width="auto"
+                       VerticalAlignment="Center" Opacity="0.7">
+                <Run Foreground="Black" FontFamily="Arial" FontSize="30">Issue</Run>
+            </TextBlock>
+            <StackPanel Margin="0, 2, 2, 2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnClose"
+                        Background="#FFAFBD"
+                        Width="40" Click="BtnClose_Click" 
+                        BorderThickness="2">
+                    <iconPacks:PackIconMaterial 
+                    Kind="WindowClose" Height="auto" 
+                    Opacity="0.7"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <StackPanel Orientation="Vertical" Margin="0, 15, 0, 0">
+            <iconPacks:PackIconMaterial Kind="Alert" HorizontalAlignment="Center" Width="50" Height="50"/>
+            <TextBlock x:Name="IssueTextBlock" Margin="0, 5, 0, 0" Text="Smart Parking App Registration"     
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontWeight="Light" 
+                           FontFamily="arial"
+                           Width="340"
+                           Height="85"
+                           FontSize="20"
+                           TextAlignment="Center"    
+                       />
+        </StackPanel>
+        <DockPanel.Background>
+            <LinearGradientBrush>
+                <GradientStop Color="#FFAFBD" Offset="0.0"/>
+                <GradientStop Color="#FFC3A0" Offset="1" />
+            </LinearGradientBrush>
+        </DockPanel.Background>
+    </DockPanel>
+    
+</Window>

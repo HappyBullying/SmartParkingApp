@@ -1,28 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using SmartParkingApp.ClassLibrary;
+using SmartParkingApp.Client.ViewModels;
+using System;
+using System.IO;
+using System.Reflection;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SmartParkingApp.Client.Pages
 {
-    /// <summary>
-    /// Логика взаимодействия для LoginPage.xaml
-    /// </summary>
     public partial class LoginPage : Page
     {
-        public LoginPage()
+        public LoginPage(ParkingManager pkm, Action navigateToMenue, Action navigateToRegister)
         {
             InitializeComponent();
+
+
+            // ViewModel class
+            LoginViewModel viewModelReg = new LoginViewModel(UserRole.Client, pkm, navigateToMenue, navigateToRegister);
+            DataContext = viewModelReg;
+
+            // Load image from resources
+            Assembly asm = GetType().GetTypeInfo().Assembly;
+            using (Stream stream = asm.GetManifestResourceStream("SmartParkingApp.Client.Images.car_parking_ico.png"))
+            {
+                BitmapImage imgSource = new BitmapImage();
+                imgSource.BeginInit();
+                imgSource.StreamSource = stream;
+                imgSource.EndInit();
+                reg_logo_img.Source = imgSource;
+            }
+
+
+            // PasswordBox Password property does not support binding
+            passwdBox.PasswordChanged += (s, e) =>
+            {
+                viewModelReg.Password = passwdBox.Password;
+            };
         }
     }
 }

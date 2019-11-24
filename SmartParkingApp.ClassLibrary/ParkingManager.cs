@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace SmartParkingApp.ClassLibrary
 {
@@ -17,15 +18,76 @@ namespace SmartParkingApp.ClassLibrary
         private int parkingCapacity;
         private int freeLeavePeriod;
         private int nextTicketNumber;
+        private readonly string DataPath;
 
 
 
-        public ParkingManager()
+        public ParkingManager(string dataPath)
         {
+            DataPath = dataPath;
             LoadData();
         }
 
 
+        /// <summary>
+        /// Registers new user
+        /// </summary>
+        public string RegisterNewUser(User usr)
+        {
+            if (users.Count != 0)
+            {
+                bool alreadyExist = users.Any(u => u.Name == usr.Name);
+                if (alreadyExist)
+                {
+                    return "User with this name already exists";
+                }
+
+                int maxUserId = users.Max(u => u.Id);
+                usr.Id = maxUserId + 1;
+            }
+            else
+            {
+                usr.Id = 1;
+            }
+
+            // Add user to users collection
+            users.Add(usr);
+            Serialize(DataPath + "\\Users.json", users);
+            return "Successfully";
+        }
+
+
+        /// <summary>
+        /// Login method
+        /// </summary>
+        public string Login(User usr)
+        {
+            User found = users.Find(u => u.Name == usr.Name);
+
+
+            // Authorize via phone nubmer
+            if (found == null)
+            {
+                found = users.Find(u => u.Phone == usr.Name);
+            }
+
+            if (found == null)
+            {
+                return "No user with this name was found";
+            }
+
+            if (usr.PasswordHash == found.PasswordHash)
+            {
+                if (found.UserRole != usr.UserRole)
+                    return "You can not authorize this account using app for" + usr.UserRole;
+                else
+                   return "Successfully";
+            }
+            else
+            {
+                return "Invalid username or password";
+            }
+        }
 
         public ParkingSession EnterParking(string carPlateNumber)
         {
@@ -168,6 +230,7 @@ namespace SmartParkingApp.ClassLibrary
                 using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
                 {
                     JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
                     serializer.Serialize(jsonWriter, data);
                 }
             }
@@ -180,21 +243,32 @@ namespace SmartParkingApp.ClassLibrary
             public int Capacity { get; set; }
         }
 
-        private const string TariffsFileName = "data\\tariffs.json";
-        private const string ParkingDataFileName = "data\\parkingdata.json";
-        private const string UsersFileName = "data\\users.json";
+        //private const string TariffsFileName = "data\\tariffs.json";
+        //private const string ParkingDataFileName = "data\\parkingdata.json";
+        //private const string UsersFileName = "data\\users.json";
 
         private void LoadData()
         {
-            tariffTable = Deserialize<List<Tariff>>(Environment.CurrentDirectory + TariffsFileName);
-            ParkingData data = Deserialize<ParkingData>(Environment.CurrentDirectory + ParkingDataFileName);
-            users = Deserialize<List<User>>(Environment.CurrentDirectory + UsersFileName);
+            tariffTable = Deserialize<List<Tariff>>(DataPath + "\\Tariffs.json") ?? new List<Tariff>();
+            ParkingData data = Deserialize<ParkingData>(DataPath + "\\ParkingData.json");
+            users = Deserialize<List<User>>(DataPath + "\\Users.json") ?? new List<User>();
 
-            parkingCapacity = data.Capacity;
-            pastSessions = data.PastSessions ?? new List<ParkingSession>();
-            activeSessions = data.ActiveSessions ?? new List<ParkingSession>();
-
-            freeLeavePeriod = tariffTable.First().Minutes;
+            if (data != null)
+            {
+                parkingCapacity = data.Capacity;
+                pastSessions = (data.PastSessions == null) ? new List<ParkingSession>() : data.PastSessions;
+                activeSessions = (data.ActiveSessions == null) ? new List<ParkingSession>() : data.ActiveSessions;
+            }
+            else
+            {
+                parkingCapacity = 0;
+                pastSessions = new List<ParkingSession>();
+                activeSessions = new List<ParkingSession>();
+            }
+            if (tariffTable.Count != 0)
+                freeLeavePeriod = tariffTable.First().Minutes;
+            else
+                freeLeavePeriod = 0;
             nextTicketNumber = activeSessions.Count > 0 ? activeSessions.Max(s => s.TicketNumber) + 1 : 1;
         }
 
@@ -207,7 +281,7 @@ namespace SmartParkingApp.ClassLibrary
                 PastSessions = pastSessions
             };
 
-            Serialize(ParkingDataFileName, data);
+            Serialize(DataPath + "\\ParkingData.json", data);
         }
 
         private void CompleteSession(ParkingSession session, DateTime currentDt)
