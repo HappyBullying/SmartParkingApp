@@ -53,7 +53,7 @@ namespace SmartParkingApp.Client
         // Navigates to Menue Page
         private void NavigateToMenue()
         {
-            //main_frame.Content = new
+            main_frame.Content = new ClientMenuePage();
         }
 
         // Prepares json files

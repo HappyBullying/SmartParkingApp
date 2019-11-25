@@ -95,6 +95,10 @@
     <Compile Include="Pages\ClientMenuePage.xaml.cs">
       <DependentUpon>ClientMenuePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\CompletedOperations.xaml.cs">
+      <DependentUpon>CompletedOperations.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\CompleteOpeartionsViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\RegisterViewModel.cs" />
     <Page Include="ButtonDictionary.xaml">
@@ -118,6 +122,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Pages\ClientMenuePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\CompletedOperations.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

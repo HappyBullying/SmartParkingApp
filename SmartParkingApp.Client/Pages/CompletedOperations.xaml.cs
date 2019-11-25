@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SmartParkingApp.Client.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,17 +16,13 @@ using System.Windows.Shapes;
 
 namespace SmartParkingApp.Client.Pages
 {
-    public partial class ClientMenuePage : Page
+    public partial class CompletedOperations : Page
     {
-        public ClientMenuePage()
+        public CompletedOperations()
         {
             InitializeComponent();
-            ContentFrame.Content = new CompletedOperations();
-        }
-
-        private void ListViewMenu_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
+            DataContext = new CompleteOpeartionsViewModel();
+            ParkingSession.ItemsSource = (DataContext as CompleteOpeartionsViewModel).Sessions;
         }
     }
 }
