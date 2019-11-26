@@ -23,6 +23,7 @@ namespace SmartParkingApp.Client.Pages
             InitializeComponent();
             DataContext = new CompleteOpeartionsViewModel();
             ParkingSession.ItemsSource = (DataContext as CompleteOpeartionsViewModel).Sessions;
+            
         }
     }
 }

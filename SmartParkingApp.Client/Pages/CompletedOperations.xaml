@@ -7,18 +7,59 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="CompletedOperations">
-    <Grid Background="Lavender">
-        <ListView Name="ParkingSession">
+    <Grid Background="Transparent">
+        <ListView Name="ParkingSession" Background="Transparent" FontFamily="Arial">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn>TicketNumber</GridViewColumn>
-                    <GridViewColumn>EntryDate</GridViewColumn>
-                    <GridViewColumn>PaymentDate</GridViewColumn>
-                    <GridViewColumn>ExitDate</GridViewColumn>
-                    <GridViewColumn>TotalPayment</GridViewColumn>
-                    <GridViewColumn>CarPlateNumber</GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=TicketNumber}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">TicketNumber</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=EntryDt}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">EntryDate</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=PaymentDt}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">PaymentDate</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=ExitDt}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">ExitDate</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=TotalPayment}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">TotalPayment</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=CarPlateNumber}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">CarPlateNumber</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridView.ColumnHeaderContainerStyle>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </GridView.ColumnHeaderContainerStyle>
                 </GridView>
             </ListView.View>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="Bisque" />
+                        </Trigger>
+                        <Trigger Property="Border.IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="Bisque"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
         </ListView>
     </Grid>
 </Page>

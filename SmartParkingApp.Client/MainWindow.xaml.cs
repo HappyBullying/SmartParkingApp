@@ -33,7 +33,7 @@ namespace SmartParkingApp.Client
             navigateToRegister = new Action(NavigateToRegister);
             navigateToMenue = new Action(NavigateToMenue);
 
-            main_frame.Content = new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
+            main_frame.Content = new ClientMenuePage(); //new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
         }
 
 

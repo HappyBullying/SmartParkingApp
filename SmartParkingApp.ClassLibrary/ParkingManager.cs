@@ -89,6 +89,19 @@ namespace SmartParkingApp.ClassLibrary
             }
         }
 
+
+
+        /// <summary>
+        /// Returns previous parking sessions for user
+        /// </summary>
+        public List<ParkingSession> GetPastSessionsForUser(int userId)
+        {
+            List<ParkingSession> ret = (from tmp in pastSessions
+                                        where tmp.UserId == userId
+                                        select tmp).ToList();
+            return ret;
+        }
+
         public ParkingSession EnterParking(string carPlateNumber)
         {
             if (activeSessions.Count >= parkingCapacity || activeSessions.Any(s => s.CarPlateNumber == carPlateNumber))
