@@ -189,7 +189,7 @@ namespace SmartParkingApp.Owner.ViewModels
 
         private bool _nameReady = false;
         private bool _passwordReady = false;
-        private bool _carPlateNumberReady = false;
+        private bool _carPlateNumberReady = true;
         private bool _phoneNumberReady = false;
         private void EnableRegisterButton()
         {
@@ -257,7 +257,7 @@ namespace SmartParkingApp.Owner.ViewModels
             if (!result.Equals("Successfully"))
             {
                 IssueWindow iss = new IssueWindow(result);
-                iss.Show();
+                iss.ShowDialog();
             }
             else
             {

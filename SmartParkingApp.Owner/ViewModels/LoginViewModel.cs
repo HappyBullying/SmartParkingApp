@@ -177,7 +177,7 @@ namespace SmartParkingApp.Owner.ViewModels
             if (!int.TryParse(result, out userId))
             {
                 IssueWindow iss = new IssueWindow(result);
-                iss.Show();
+                iss.ShowDialog();
             }
             else
             {

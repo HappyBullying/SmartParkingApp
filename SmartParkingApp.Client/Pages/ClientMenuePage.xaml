@@ -29,7 +29,8 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Frame x:Name="ContentFrame" DockPanel.Dock="Left" Background="Transparent"/>
-
+        <Border BorderThickness="1" BorderBrush="Gray">
+            <Frame x:Name="ContentFrame" DockPanel.Dock="Left" Background="Transparent"/>
+        </Border>
     </DockPanel>
 </Page>

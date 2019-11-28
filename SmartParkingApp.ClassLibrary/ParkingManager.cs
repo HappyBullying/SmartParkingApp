@@ -31,22 +31,83 @@ namespace SmartParkingApp.ClassLibrary
 
 
         /// <summary>
+        /// Returns Active session for user if he closed the application and didn't payed
+        /// </summary>
+        public ParkingSession GetActiveSessionForUser(int userId)
+        {
+            ParkingSession ret = activeSessions.Find(ps => ps.UserId == userId);
+            return ret;
+        }
+
+
+
+
+
+
+        /// <summary>
         /// Returns all parking session that are inside time interval
         /// </summary>
-        public IEnumerable<ParkingSession> GetPastSessionsInPeriod(int userId, DateTime since, DateTime until)
+        public IEnumerable<ParkingSession> GetSessionsInPeriod(int userId, DateTime since, DateTime until)
         {
-            User usr = users.Find(u => u.Id == userId);
+            User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
             if (usr == null)
                 return null;
             if (usr.UserRole != UserRole.Owner)
                 return null;
 
-            IEnumerable<ParkingSession> ret = from tmp in pastSessions
-                                              where
-                     (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until)
+            List<ParkingSession> ret = new List<ParkingSession>();
+
+            IEnumerable<ParkingSession> past = from tmp in pastSessions
+                                               where (tmp.EntryDt >= since) && (tmp.ExitDt <= until)
+                                               select tmp;
+            ret.AddRange(past);
+            IEnumerable<ParkingSession> act = from tmp in activeSessions
+                                              where (tmp.ExitDt >= since)
                                               select tmp;
+
+            IEnumerator<ParkingSession> enumer = act.GetEnumerator();
+            // Set exit dates to until
+            while(enumer.MoveNext())
+            {
+                ret.Add(new ParkingSession
+                {
+                    EntryDt = enumer.Current.EntryDt,
+                    ExitDt = until,
+                    CarPlateNumber = enumer.Current.CarPlateNumber,
+                    TicketNumber = enumer.Current.TicketNumber
+                });
+            }
+
             return ret;
         }
+
+
+
+
+        /// <summary>
+        /// Returns all payed parking session that are inside time interval
+        /// </summary>
+        public IEnumerable<ParkingSession> GetPayedSessionsInPeriod(int userId, DateTime since, DateTime until)
+        {
+            User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
+            if (usr == null)
+                return null;
+            if (usr.UserRole != UserRole.Owner)
+                return null;
+
+            List<ParkingSession> ret = (from tmp in pastSessions
+                                              where
+                     (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until)
+                                              select tmp).ToList();
+            IEnumerable<ParkingSession> active = from tmp in activeSessions
+                                                  where (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until) &&
+                                                  (tmp.PaymentDt != null) select tmp;
+
+            ret.AddRange(active);
+            return ret;
+        }
+
+
 
 
 

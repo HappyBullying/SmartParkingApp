@@ -141,6 +141,31 @@ namespace SmartParkingApp.Client.ViewModels
             PayCommand = new CurSesCommand(new Action(Pay));
             RenewCommand = new CurSesCommand(new Action(RenewCost));
             LeaveCommand = new CurSesCommand(new Action(TryToLeave));
+            LoadActiveIfExists();
+        }
+
+
+
+
+
+
+        // Перевести вGoogleBingif the user has closed the 
+        // application it is necessary to download data from the 
+        // active sessionif the user has closed the application it is 
+        // necessary to download data from the active session
+        private void LoadActiveIfExists()
+        {
+            _currentSession = _pk.GetActiveSessionForUser(_User.Id);
+            
+            if (_currentSession != null)
+            {
+                EnterEnabled = false;
+                CarPlateNumber = _currentSession.CarPlateNumber;
+                EntryDate = _currentSession.EntryDt;
+                PayEnabled = true;
+                RenewEnabled = true;
+                Cost = _pk.GetRemainingCost(_currentSession.TicketNumber);
+            }
         }
 
 
@@ -190,7 +215,7 @@ namespace SmartParkingApp.Client.ViewModels
                 if (!issueWindow.IsVisible)
                 {
                     issueWindow.SetText("You can not leave the parking now");
-                    issueWindow.Show();
+                    issueWindow.ShowDialog();
                 }
             }
 

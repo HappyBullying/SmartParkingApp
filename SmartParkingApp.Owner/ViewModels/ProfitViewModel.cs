@@ -57,7 +57,10 @@ namespace SmartParkingApp.Owner.ViewModels
 
         private void Calculate()
         {
-            IEnumerable<ParkingSession> result = _pk.GetPastSessionsInPeriod(_userId, Since, Until);
+            if ((Until - Since).TotalMilliseconds < 0)
+                return;
+
+            IEnumerable<ParkingSession> result = _pk.GetPayedSessionsInPeriod(_userId, Since, Until);
             
             
             decimal? count = 0;

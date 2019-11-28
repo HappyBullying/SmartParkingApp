@@ -28,6 +28,11 @@
                     <iconPacks:PackIconMaterial Opacity="0.8" Kind="Coin" Height="25" Width="25" Margin="10"/>
                 </Button>
                 <Button Margin="0, 0, 0, 3" VerticalAlignment="Top" Style="{StaticResource ActionButton}"
+                        x:Name="SpecialButton" Click="SpecialButton_Click"
+                        Background="Transparent" BorderThickness="0">
+                    <iconPacks:PackIconMaterial Opacity="0.8" Kind="Car" Height="25" Width="25" Margin="10"/>
+                </Button>
+                <Button Margin="0, 0, 0, 3" VerticalAlignment="Top" Style="{StaticResource ActionButton}"
                         x:Name="AccountButtnon" Click="AccountButtnon_Click"
                         Background="Transparent" BorderThickness="0">
                     <iconPacks:PackIconMaterial Opacity="0.8" Kind="Account" Height="25" Width="25" Margin="10"/>

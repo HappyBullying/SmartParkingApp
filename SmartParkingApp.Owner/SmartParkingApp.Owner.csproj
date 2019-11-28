@@ -69,6 +69,7 @@
     <Compile Include="Commands\LoginCommand.cs" />
     <Compile Include="Commands\ProfitCommand.cs" />
     <Compile Include="Commands\RegisterCommand.cs" />
+    <Compile Include="Commands\SpecialCommand.cs" />
     <Compile Include="Commands\StatisticsCommand.cs" />
     <Compile Include="IssueWindow.xaml.cs">
       <DependentUpon>IssueWindow.xaml</DependentUpon>
@@ -82,6 +83,9 @@
     <Compile Include="Pages\ProfitPage.xaml.cs">
       <DependentUpon>ProfitPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\SpecialPage.xaml.cs">
+      <DependentUpon>SpecialPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\StatisticsPage.xaml.cs">
       <DependentUpon>StatisticsPage.xaml</DependentUpon>
     </Compile>
@@ -90,6 +94,7 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\ProfitViewModel.cs" />
     <Compile Include="ViewModels\RegisterViewModel.cs" />
+    <Compile Include="ViewModels\SpecialViewModel.cs" />
     <Compile Include="ViewModels\StatisticsViewModel.cs" />
     <Page Include="ButtonDictionary.xaml">
       <SubType>Designer</SubType>
@@ -132,6 +137,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\RegistrationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\SpecialPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

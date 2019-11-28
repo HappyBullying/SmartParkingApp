@@ -9,7 +9,7 @@
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         WindowStyle="None"
         ResizeMode="NoResize"
-        Title="IssueWindow" Height="200" Width="350" BorderThickness="2">
+        Title="IssueWindow" Height="200" Width="450" BorderThickness="2">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" ResizeBorderThickness="2"></WindowChrome>
     </WindowChrome.WindowChrome>
@@ -45,7 +45,7 @@
                            FontFamily="arial"
                            Width="340"
                            Height="85"
-                           FontSize="20"
+                           FontSize="18"
                            TextAlignment="Center"    
                        />
         </StackPanel>

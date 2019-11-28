@@ -50,5 +50,13 @@ namespace SmartParkingApp.Owner.Pages
                 ContentFrame.Content = new ProfitPage(_userId, _pk);
             }
         }
+
+        private void SpecialButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!(ContentFrame.Content is SpecialPage))
+            {
+                ContentFrame.Content = new SpecialPage(_userId, _pk);
+            }
+        }
     }
 }
