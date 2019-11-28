@@ -1,0 +1,116 @@
+﻿<Page x:Class="SmartParkingApp.Owner.Pages.LoginPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SmartParkingApp.Owner.Pages"
+      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="LoginPage">
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Border CornerRadius="4" Grid.RowSpan="2" Background="Transparent">
+            </Border>
+
+            <StackPanel VerticalAlignment="Center">
+                <Image Width="130" x:Name="reg_logo_img" />
+                <TextBlock Margin="0, 15, 0, 15" Text="Smart Parking App Login" 
+                           HorizontalAlignment="Center" 
+                           FontWeight="Light" 
+                           FontFamily="arial"
+                           FontSize="30" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center">
+                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial 
+                    Kind="Account" 
+                    Opacity="0.7"
+                    Margin="0, 0, 15, 0"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"/>
+                    <TextBox FontFamily="arial"
+                           MaxLength="35"
+                           FontWeight="Light"
+                           Text="{Binding UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                           FontSize="25"
+                           Height="30"
+                           MaxWidth="320"
+                           Width="320"
+                           HorizontalAlignment="Right"
+                           Foreground="Black"
+                           Background="Transparent"
+                           Opacity="0.7"
+                           />
+                </StackPanel>
+                <Border
+                    Margin="0, 0, 0, 8"
+                    HorizontalAlignment="Right"
+                    Width="320"
+                    Height="3">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding UsernameColor, Mode=OneWay}"></SolidColorBrush>
+                    </Border.Background>
+                </Border>
+
+                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial 
+                    Kind="Key" 
+                    Opacity="0.7"
+                    Margin="0, 0, 15, 0"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"/>
+                    <PasswordBox x:Name="passwdBox" FontFamily="arial"
+                        MaxLength="35"
+                        FontWeight="Light"
+                        FontSize="25"
+                        Password="password"
+                        MaxWidth="320"
+                        Width="320"
+                        Height="30"
+                        HorizontalAlignment="Center"
+                        Foreground="Black"
+                        Background="Transparent"
+                        Opacity="0.7"
+                        />
+                </StackPanel>
+                <Border
+                    Margin="0, 0, 0, 8"
+                    HorizontalAlignment="Right"
+                    Width="320"
+                    Height="3">
+                    <Border.Background>
+                        <SolidColorBrush Color="{Binding PasswordColor, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></SolidColorBrush>
+                    </Border.Background>
+                </Border>
+                <StackPanel Margin="0, 15, 0, 0" Orientation="Horizontal" 
+                            HorizontalAlignment="Center">
+                    <Button Width="160"
+                            Height="35"
+                            IsEnabled="{Binding IsBtnRegisterEnabled, Mode=OneWay}"
+                            Style="{StaticResource ActionButton}"
+                            Command="{Binding Login_Command}"
+                            HorizontalAlignment="Center"
+                            Content="Login"
+                            FontSize="25"
+                            ></Button>
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" Margin="0, 10, 0, 0">
+                    <Hyperlink Command="{Binding NavigateToRegister}" TextDecorations="{x:Null}">
+                        <TextBlock TextAlignment="Center" TextWrapping="Wrap">
+                            Don't have an account?
+                            <LineBreak/>
+                            Register Now
+                        </TextBlock>
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

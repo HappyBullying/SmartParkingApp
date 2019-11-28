@@ -1,0 +1,73 @@
+﻿<Page x:Class="SmartParkingApp.Owner.Pages.AllOperationsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:str="clr-namespace:System;assembly=mscorlib"
+      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SmartParkingApp.Owner.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="AllOperationsPage">
+    <StackPanel Background="Transparent">
+        <ComboBox SelectedValue="{Binding Selected, Mode=OneWayToSource}" Width="100"
+                  SelectedIndex="2" HorizontalAlignment="Left">
+            <str:String>PastSessions</str:String>
+            <str:String>ActiveSessions</str:String>
+            <str:String>All</str:String>
+        </ComboBox>
+        <ListView Name="ParkingSession" ItemsSource="{Binding Sessions}" Background="Transparent" FontFamily="Arial">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=TicketNumber}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">TicketNumber</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=EntryDt}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">EntryDate</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=PaymentDt}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">PaymentDate</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=ExitDt}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">ExitDate</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=TotalPayment}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">TotalPayment</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=CarPlateNumber}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader IsEnabled="False">CarPlateNumber</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridView.ColumnHeaderContainerStyle>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </GridView.ColumnHeaderContainerStyle>
+                </GridView>
+            </ListView.View>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="Bisque" />
+                        </Trigger>
+                        <Trigger Property="Border.IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="Bisque"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+    </StackPanel>
+</Page>

@@ -16,7 +16,8 @@ namespace SmartParkingApp.Client
 
         private Action navigateToRegister;
         private Action navigateToLogin;
-        private Action navigateToMenue;
+        private Action logoutAction;
+        private Action<int> navigateToMenue;
 
         public MainWindow()
         {
@@ -31,9 +32,10 @@ namespace SmartParkingApp.Client
 
             navigateToLogin = new Action(NavigateToLogin);
             navigateToRegister = new Action(NavigateToRegister);
-            navigateToMenue = new Action(NavigateToMenue);
+            navigateToMenue = new Action<int>(userId => NavigateToMenue(userId));
+            logoutAction = new Action(NavigateToLogin);
 
-            main_frame.Content = new ClientMenuePage(); //new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
+            main_frame.Content = new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
         }
 
 
@@ -51,9 +53,9 @@ namespace SmartParkingApp.Client
 
 
         // Navigates to Menue Page
-        private void NavigateToMenue()
+        private void NavigateToMenue(int userId)
         {
-            main_frame.Content = new ClientMenuePage();
+            main_frame.Content = new ClientMenuePage(userId, logoutAction, _pkManager);
         }
 
         // Prepares json files

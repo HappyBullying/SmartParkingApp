@@ -4,9 +4,65 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SmartParkingApp.Owner"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        mc:Ignorable="d" WindowStartupLocation="CenterOwner"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        MinHeight="600" MinWidth="650"
+        BorderThickness="2"
+        Height="600" Width="900" Background="Gray">
+    <Window.BorderBrush>
+        <SolidColorBrush Color="Black" Opacity="0.5"></SolidColorBrush>
+    </Window.BorderBrush>
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="2"></WindowChrome>
+    </WindowChrome.WindowChrome>
+
+
+
+    <DockPanel LastChildFill="True">
+        <Grid DockPanel.Dock="Top" Height="35" Background="#FFAFBD" MouseDown="DragWindow">
+            <Grid.Effect>
+                <DropShadowEffect BlurRadius="1" ShadowDepth="1" Color="#FFACACAC"/>
+            </Grid.Effect>
+            <TextBlock HorizontalAlignment="Center" Width="auto"
+                       VerticalAlignment="Center" Opacity="0.7">
+                <Run Foreground="Black" FontFamily="Arial" FontSize="30">Smart Parking App</Run>
+            </TextBlock>
+            <StackPanel Margin="0, 2, 2, 2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnMinimize"
+                        Background="#FFAFBD"
+                        Width="40" Click="BtnMinimize_Click" 
+                        BorderThickness="2">
+                    <iconPacks:PackIconMaterial 
+                    Kind="WindowMinimize" Height="auto" 
+                    Opacity="0.7"/>
+                </Button>
+                <Button x:Name="WindowMaximize" Background="#FFAFBD" BorderThickness="2" Width="40" Click="WindowMaximize_Click" Content="{DynamicResource WMaximize}">
+                </Button>
+                <Button x:Name="WindowClose" Background="#FFAFBD" BorderThickness="2" Width="40" Click="WindowClose_Click">
+                    <iconPacks:PackIconMaterial 
+                    Kind="WindowClose" Height="auto" 
+                    Opacity="0.7"/>
+                </Button>
+            </StackPanel>
+            <Border Height="1" Width="100" HorizontalAlignment="Left" VerticalAlignment="Bottom" BorderBrush="Black" Opacity="1"></Border>
+        </Grid>
+
+        <Frame DockPanel.Dock="Top" Margin="0, 1, 0, 0" x:Name="main_frame">
+            <Frame.Background>
+                <LinearGradientBrush>
+                    <GradientStop Color="#FFC3A0" Offset="0.0" />
+                    <GradientStop Color="#FFAFBD" Offset="1"/>
+                </LinearGradientBrush>
+            </Frame.Background>
+        </Frame>
+    </DockPanel>
+
+
+
+    <Window.Resources>
+        <iconPacks:PackIconMaterial Kind="WindowRestore" x:Key="WRestore" />
+        <iconPacks:PackIconMaterial Kind="WindowMaximize" x:Key="WMaximize"/>
+    </Window.Resources>
 </Window>

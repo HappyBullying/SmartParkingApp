@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace SmartParkingApp.Client
+namespace SmartParkingApp.Owner
 {
     public partial class IssueWindow : Window
     {

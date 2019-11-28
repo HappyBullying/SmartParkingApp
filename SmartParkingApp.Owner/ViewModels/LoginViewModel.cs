@@ -1,13 +1,13 @@
 ﻿using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
-using SmartParkingApp.Client.Commands;
+using SmartParkingApp.Owner.Commands;
 using System;
 using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Media;
 
-namespace SmartParkingApp.Client.ViewModels
+namespace SmartParkingApp.Owner.ViewModels
 {
     class LoginViewModel : INotifyPropertyChanged
     {
@@ -173,7 +173,7 @@ namespace SmartParkingApp.Client.ViewModels
             string result = _pkManager.Login(usr);
 
             int userId;
-            
+
             if (!int.TryParse(result, out userId))
             {
                 IssueWindow iss = new IssueWindow(result);

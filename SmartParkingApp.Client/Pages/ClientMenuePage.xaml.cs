@@ -1,31 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using SmartParkingApp.ClassLibrary;
+using System;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SmartParkingApp.Client.Pages
 {
     public partial class ClientMenuePage : Page
     {
-        public ClientMenuePage()
+        private int _userId;
+        private Action _logoutAct;
+        private ParkingManager _pk;
+
+        public ClientMenuePage(int userId, Action logoutAct, ParkingManager pk)
         {
             InitializeComponent();
-            ContentFrame.Content = new CompletedOperations();
+            _pk = pk;
+            _logoutAct = logoutAct;
+            _userId = userId;
+            ContentFrame.Content = new CompletedOperations(_userId, _pk);
         }
 
-        private void ListViewMenu_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
+            if (!(ContentFrame.Content is CompletedOperations))
+            {
+                ContentFrame.Content = new CompletedOperations(_userId, _pk);
+            }
+        }
 
+        private void SessionButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!(ContentFrame.Content is CurrentSessionPage))
+            {
+                ContentFrame.Content = new CurrentSessionPage(_userId, _pk);
+            }
+        }
+
+        private void AccountButtnon_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!(ContentFrame.Content is AccountPage))
+            {
+                ContentFrame.Content = new AccountPage(_userId, _logoutAct, _pk);
+            }
         }
     }
 }

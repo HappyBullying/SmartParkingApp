@@ -1,0 +1,21 @@
+﻿<Page x:Class="SmartParkingApp.Owner.Pages.StatisticsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SmartParkingApp.Owner.Pages"
+      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="StatisticsPage">
+    <StackPanel HorizontalAlignment="Left" Orientation="Vertical">
+        <Button Margin="10, 10, 0, 0" HorizontalAlignment="Left" Command="{Binding RefreshPercent}"
+                Width="50" Height="30" Style="{StaticResource ActionButton}">
+            <iconPacks:PackIconMaterial Kind="Reload"/>
+        </Button>
+        <TextBlock Margin="10, 10, 0, 0" VerticalAlignment="Top" FontFamily="arial" Opacity="0.7" FontSize="25">
+            <Run Text="Percentage of occupied spaces: "></Run>
+            <Run Text="{Binding Percent, Mode=OneWay}"></Run>
+        </TextBlock>
+    </StackPanel>
+</Page>

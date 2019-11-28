@@ -1,27 +1,26 @@
 ﻿using SmartParkingApp.ClassLibrary;
-using SmartParkingApp.Client.ViewModels;
+using SmartParkingApp.Owner.ViewModels;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-namespace SmartParkingApp.Client.Pages
+namespace SmartParkingApp.Owner.Pages
 {
-    public partial class LoginPage : Page
+    public partial class RegistrationPage : Page
     {
-        public LoginPage(ParkingManager pkm, Action<int> navigateToMenue, Action navigateToRegister)
+        public RegistrationPage(ParkingManager pkm, Action navigateToLogin)
         {
             InitializeComponent();
 
-
             // ViewModel class
-            LoginViewModel viewModelReg = new LoginViewModel(UserRole.Client, pkm, navigateToMenue, navigateToRegister);
+            RegisterViewModel viewModelReg = new RegisterViewModel(UserRole.Owner, pkm, navigateToLogin);
             DataContext = viewModelReg;
 
             // Load image from resources
             Assembly asm = GetType().GetTypeInfo().Assembly;
-            using (Stream stream = asm.GetManifestResourceStream("SmartParkingApp.Client.Images.car_parking_ico.png"))
+            using (Stream stream = asm.GetManifestResourceStream("SmartParkingApp.Owner.Images.car_parking_ico.png"))
             {
                 BitmapImage imgSource = new BitmapImage();
                 imgSource.BeginInit();

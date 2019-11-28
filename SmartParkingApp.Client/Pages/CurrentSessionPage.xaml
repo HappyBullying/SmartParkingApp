@@ -1,0 +1,61 @@
+﻿<Page x:Class="SmartParkingApp.Client.Pages.CurrentSessionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SmartParkingApp.Client.Pages"
+      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="CurrentSessionPage">
+    <StackPanel Margin="20, 0, 0, 0" HorizontalAlignment="Left" Background="Transparent" Orientation="Vertical">
+        <DockPanel LastChildFill="True" Margin="0, 20, 0, 0">
+            <TextBlock Text="CarPlateNumber: " Opacity="0.7"
+                       DockPanel.Dock="Left" HorizontalAlignment="Left"
+                       FontFamily="Arial" FontSize="20" />
+            <TextBlock DockPanel.Dock="Left" HorizontalAlignment="Left" Width="auto"
+                       VerticalAlignment="Center" Opacity="0.7">
+                <Run Foreground="Black" FontFamily="Arial" FontSize="20"
+                     Text="{Binding CarPlateNumber, Mode=OneWay}"></Run>
+            </TextBlock>
+        </DockPanel>
+
+        <DockPanel Margin="0, 20, 0, 0" LastChildFill="True">
+            <TextBlock Text="EntryDate: " Opacity="0.7"
+                       DockPanel.Dock="Left" HorizontalAlignment="Left"
+                       FontFamily="Arial" FontSize="20" />
+            <TextBlock DockPanel.Dock="Left" HorizontalAlignment="Left" Width="auto"
+                       VerticalAlignment="Center" Opacity="0.7">
+                <Run Foreground="Black" FontFamily="Arial" FontSize="20"
+                     Text="{Binding EntryDate, Mode=OneWay}"></Run>
+            </TextBlock>
+        </DockPanel>
+
+        <DockPanel Margin="0, 20, 0, 0" LastChildFill="True">
+            <TextBlock Text="Cost: " Opacity="0.7"
+                       DockPanel.Dock="Left" HorizontalAlignment="Left"
+                       FontFamily="Arial" FontSize="20" />
+            <TextBlock HorizontalAlignment="Left" Width="auto"
+                       VerticalAlignment="Center" Opacity="0.7">
+                <Run Foreground="Black" FontFamily="Arial" FontSize="20" 
+                     Text="{Binding Cost, Mode=OneWay}"></Run>
+            </TextBlock>
+        </DockPanel>
+        <StackPanel Margin="0, 25, 0, 0" Orientation="Vertical">
+            <Button Margin="0, 15, 0, 0" HorizontalAlignment="Left" IsEnabled="{Binding RenewEnabled, Mode=OneWay}"
+                Style="{StaticResource ActionButton}"
+                Command="{Binding RenewCommand}" Width="60" Height="35" FontSize="20">
+                <iconPacks:PackIconMaterial Kind="Reload" />
+            </Button>
+            <Button Margin="0, 15, 0, 0" HorizontalAlignment="Left"
+                Style="{StaticResource ActionButton}" IsEnabled="{Binding EnterEnabled, Mode=OneWay}"
+                Command="{Binding EnterCommand}" Width="180" Height="35" FontSize="20" Content="Enter the Parking"/>
+            <Button Margin="0, 20, 0, 0" HorizontalAlignment="Left" IsEnabled="{Binding PayEnabled, Mode=OneWay}" 
+                Style="{StaticResource ActionButton}" 
+                Command="{Binding PayCommand}" Width="180" Height="35" FontSize="20" Content="Pay for Parking"/>
+            <Button Margin="0, 20, 0, 0" HorizontalAlignment="Left" IsEnabled="{Binding LeaveEnabled, Mode=OneWay}"
+                Style="{StaticResource ActionButton}" 
+                Command="{Binding LeaveCommand}" Width="180" Height="35" FontSize="20" Content="Leave the Parking"/>
+        </StackPanel>
+    </StackPanel>
+</Page>

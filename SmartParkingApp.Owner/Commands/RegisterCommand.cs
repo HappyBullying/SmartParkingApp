@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace SmartParkingApp.Client.Commands
+namespace SmartParkingApp.Owner.Commands
 {
     class RegisterCommand : ICommand
     {

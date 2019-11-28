@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace SmartParkingApp.ClassLibrary
 {
@@ -22,12 +21,133 @@ namespace SmartParkingApp.ClassLibrary
 
 
 
+
         public ParkingManager(string dataPath)
         {
             DataPath = dataPath;
             LoadData();
         }
 
+
+
+        /// <summary>
+        /// Returns all parking session that are inside time interval
+        /// </summary>
+        public IEnumerable<ParkingSession> GetPastSessionsInPeriod(int userId, DateTime since, DateTime until)
+        {
+            User usr = users.Find(u => u.Id == userId);
+            if (usr == null)
+                return null;
+            if (usr.UserRole != UserRole.Owner)
+                return null;
+
+            IEnumerable<ParkingSession> ret = from tmp in pastSessions
+                                              where
+                     (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until)
+                                              select tmp;
+            return ret;
+        }
+
+
+
+        /// <summary>
+        /// Returns past sessions if user is owner
+        /// </summary>
+        public IEnumerable<ParkingSession> GetActiveSesstionsForOwner(int userId)
+        {
+            bool isOwner = users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
+
+            if (isOwner)
+            {
+                return activeSessions;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+
+        /// <summary>
+        /// Returns All Past Sessions if user is owner
+        /// </summary>
+        public IEnumerable<ParkingSession> GetPastSesstionsForOwner(int userId)
+        {
+            bool isOwner = users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
+
+            if (isOwner)
+            {
+                return pastSessions;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// Gets Percentage of occupied space
+        /// </summary>
+        public double GetPercentageofOccupiedSpace(int userId)
+        {
+            User usr = users.Find(u => u.Id == userId);
+            
+            if (usr == null)
+            {
+                return -1;
+            }
+
+            if (usr.UserRole != UserRole.Owner)
+            {
+                return -1;
+            }
+
+
+            double taken = activeSessions.Count;
+            double rate = taken / parkingCapacity;
+            return rate * 100.0d;
+        }
+
+
+        /// <summary>
+        /// Gets list of tariffs
+        /// </summary>
+        public List<Tariff> GetTariffs()
+        {
+            return tariffTable;
+        }
+
+
+        /// <summary>
+        /// Get completed parking sessions for user
+        /// </summary>
+        public IEnumerable<ParkingSession> GetCompletedSessionsForUser(int userId)
+        {
+            // Select from pastSessions list only those sessions that are ralative to
+            // user with specified ID
+            // If query won't succeed then ret will not be null
+
+            IEnumerable<ParkingSession> ret = from tmp in pastSessions
+                                              where tmp.UserId == userId
+                                              select tmp;
+            return ret;
+        }
+
+
+
+        /// <summary>
+        /// Returns User object by ID
+        /// </summary>
+        public User GetUserById(int userId)
+        {
+            User ret = users.Find(u => u.Id == userId);
+            return ret;
+        }
 
         /// <summary>
         /// Registers new user
@@ -81,7 +201,7 @@ namespace SmartParkingApp.ClassLibrary
                 if (found.UserRole != usr.UserRole)
                     return "You can not authorize this account using app for" + usr.UserRole;
                 else
-                   return "Successfully";
+                    return found.Id.ToString();
             }
             else
             {
@@ -123,13 +243,13 @@ namespace SmartParkingApp.ClassLibrary
 
 
 
-        public bool TryLeaveParkingWithTicket(int ticketNumber, out ParkingSession session)
+        public bool TryLeaveParkingWithTicket(int ticketNumber, ParkingSession session)
         {
             session = GetSessionByTicketNumber(ticketNumber);
 
-            var currentDt = DateTime.Now;  // Getting the current datetime only once
+            DateTime currentDt = DateTime.Now;  // Getting the current datetime only once
 
-            var diff = (currentDt - (session.PaymentDt ?? session.EntryDt)).TotalMinutes;
+            double diff = (currentDt - (session.PaymentDt ?? session.EntryDt)).TotalMinutes;
             if (diff <= freeLeavePeriod)
             {
                 session.TotalPayment = 0;
@@ -160,7 +280,7 @@ namespace SmartParkingApp.ClassLibrary
             SaveData();
         }
 
-        public bool TryLeaveParkingByCarPlateNumber(string carPlateNumber, out ParkingSession session)
+        public bool TryLeaveParkingByCarPlateNumber(string carPlateNumber, ParkingSession session)
         {
             session = activeSessions.FirstOrDefault(s => s.CarPlateNumber == carPlateNumber);
             if (session == null)
@@ -282,6 +402,7 @@ namespace SmartParkingApp.ClassLibrary
                 freeLeavePeriod = tariffTable.First().Minutes;
             else
                 freeLeavePeriod = 0;
+
             nextTicketNumber = activeSessions.Count > 0 ? activeSessions.Max(s => s.TicketNumber) + 1 : 1;
         }
 

@@ -1,6 +1,6 @@
 ﻿using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
-using SmartParkingApp.Client.Commands;
+using SmartParkingApp.Owner.Commands;
 using System;
 using System.ComponentModel;
 using System.Security.Cryptography;
@@ -8,11 +8,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
 
-namespace SmartParkingApp.Client.ViewModels
+
+namespace SmartParkingApp.Owner.ViewModels
 {
     class RegisterViewModel : INotifyPropertyChanged
     {
-        
+
         // Properties for DataBinding
         /************************************************************************************/
         // Color for border relative to username field
@@ -184,8 +185,8 @@ namespace SmartParkingApp.Client.ViewModels
             }
         }
         private string _phoneNumber = "PhoneNumber";
-        
-        
+
+
         private bool _nameReady = false;
         private bool _passwordReady = false;
         private bool _carPlateNumberReady = false;
@@ -226,7 +227,7 @@ namespace SmartParkingApp.Client.ViewModels
             NavigateToLogin = new RegisterCommand(navigateToLogin);
         }
 
-        
+
         private void Register()
         {
             // Compute MD5 hash for password
