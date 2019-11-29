@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.IO;
 using System;
-
+using System.Reflection;
 
 namespace SmartParkingApp.Client
 {
@@ -73,12 +73,26 @@ namespace SmartParkingApp.Client
 
             if (!File.Exists(DataPath + "\\ParkingData.json"))
             {
-                File.Create(DataPath + "\\ParkingData.json").Close();
+
+                using (Stream _res = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("SmartParkingApp.Client.Default.ParkingData.json"))
+                {
+                    using (FileStream file = new FileStream(DataPath + "\\ParkingData.json", FileMode.Create))
+                    {
+                        _res.CopyTo(file);
+                    }
+                }
+
             }
 
             if(!File.Exists(DataPath + "\\Tariffs.json"))
             {
-                File.Create(DataPath + "\\Tariffs.json").Close();
+                using (Stream _res = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("SmartParkingApp.Client.Default.Tariffs.json"))
+                {
+                    using (FileStream file = new FileStream(DataPath + "\\Tariffs.json", FileMode.Create))
+                    {
+                        _res.CopyTo(file);
+                    }
+                }
             }
         }
 

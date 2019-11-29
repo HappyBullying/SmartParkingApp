@@ -9,7 +9,7 @@
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         WindowStyle="None"
         ResizeMode="NoResize"
-        Title="IssueWindow" Height="200" Width="350" BorderThickness="2">
+        Title="IssueWindow" Height="200" Width="450" BorderThickness="2">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0" ResizeBorderThickness="2"></WindowChrome>
     </WindowChrome.WindowChrome>
@@ -39,11 +39,12 @@
         <StackPanel Orientation="Vertical" Margin="0, 15, 0, 0">
             <iconPacks:PackIconMaterial Kind="Alert" HorizontalAlignment="Center" Width="50" Height="50"/>
             <TextBlock x:Name="IssueTextBlock" Margin="0, 5, 0, 0" Text="Smart Parking App Registration"     
+                           TextWrapping="Wrap"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            FontWeight="Light" 
                            FontFamily="arial"
-                           Width="340"
+                           Width="434"
                            Height="85"
                            FontSize="20"
                            TextAlignment="Center"    

@@ -39,11 +39,11 @@
         <StackPanel Orientation="Vertical" Margin="0, 15, 0, 0">
             <iconPacks:PackIconMaterial Kind="Alert" HorizontalAlignment="Center" Width="50" Height="50"/>
             <TextBlock x:Name="IssueTextBlock" Margin="0, 5, 0, 0" Text="Smart Parking App Registration"     
-                           HorizontalAlignment="Center"
+                           HorizontalAlignment="Center" TextWrapping="Wrap"
                            VerticalAlignment="Center"
                            FontWeight="Light" 
                            FontFamily="arial"
-                           Width="340"
+                           Width="434"
                            Height="85"
                            FontSize="18"
                            TextAlignment="Center"    

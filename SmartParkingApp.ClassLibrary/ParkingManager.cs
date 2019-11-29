@@ -62,21 +62,23 @@ namespace SmartParkingApp.ClassLibrary
                                                select tmp;
             ret.AddRange(past);
             IEnumerable<ParkingSession> act = from tmp in activeSessions
-                                              where (tmp.ExitDt >= since)
+                                              where (tmp.EntryDt >= since)
                                               select tmp;
 
-            IEnumerator<ParkingSession> enumer = act.GetEnumerator();
+            //IEnumerator<ParkingSession> enumer = act.GetEnumerator();
             // Set exit dates to until
-            while(enumer.MoveNext())
-            {
-                ret.Add(new ParkingSession
-                {
-                    EntryDt = enumer.Current.EntryDt,
-                    ExitDt = until,
-                    CarPlateNumber = enumer.Current.CarPlateNumber,
-                    TicketNumber = enumer.Current.TicketNumber
-                });
-            }
+            //while(enumer.MoveNext())
+            //{
+            //    ret.Add(new ParkingSession
+            //    {
+            //        EntryDt = enumer.Current.EntryDt,
+            //        ExitDt = until,
+            //        CarPlateNumber = enumer.Current.CarPlateNumber,
+            //        TicketNumber = enumer.Current.TicketNumber
+            //    });
+            //}
+
+            ret.AddRange(act);
 
             return ret;
         }
@@ -260,7 +262,7 @@ namespace SmartParkingApp.ClassLibrary
             if (usr.PasswordHash == found.PasswordHash)
             {
                 if (found.UserRole != usr.UserRole)
-                    return "You can not authorize this account using app for" + usr.UserRole;
+                    return "You can not authorize this account using app for " + usr.UserRole;
                 else
                     return found.Id.ToString();
             }

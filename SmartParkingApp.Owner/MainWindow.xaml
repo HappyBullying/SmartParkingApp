@@ -30,6 +30,7 @@
                 <Run Foreground="Black" FontFamily="Arial" FontSize="30">Smart Parking App</Run>
             </TextBlock>
             <StackPanel Margin="0, 2, 2, 2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Owner app" VerticalAlignment="Bottom" Margin="0, 0, 5, 0"/>
                 <Button x:Name="BtnMinimize"
                         Background="#FFAFBD"
                         Width="40" Click="BtnMinimize_Click" 
@@ -58,7 +59,6 @@
             </Frame.Background>
         </Frame>
     </DockPanel>
-
 
 
     <Window.Resources>

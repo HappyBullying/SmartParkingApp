@@ -65,13 +65,13 @@ namespace SmartParkingApp.Owner.ViewModels
 
             for (int i = 0; i < hr; i++)
             {
-                IEnumerable<ParkingSession> _s = from tmp in sessions
-                                                 where
-                            (tmp.EntryDt.Hour == i) ||
-                            (tmp.ExitDt.Value.Hour == i)
-                                                 select tmp;
+                List<ParkingSession> tmpPs = sessions.FindAll(ps => ps.PaymentDt != null && ps.ExitDt != null);
+                int fromPast = tmpPs.Count(ps => ps.EntryDt.Hour == i || ps.ExitDt.Value.Hour == i);
                 
-                double rate = _s.Count() / ts.TotalDays;
+                int fromActive = sessions.Count(ps => ps.PaymentDt != null && ps.ExitDt == null);
+
+                
+                double rate = (fromPast + fromActive) / (ts.TotalDays + 1);
                 result.Add(new KeyValuePair<int, double>(i, rate));
             }
 
