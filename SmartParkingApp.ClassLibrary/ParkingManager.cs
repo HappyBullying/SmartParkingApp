@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Serilog;
 
 namespace SmartParkingApp.ClassLibrary
 {
@@ -25,6 +26,19 @@ namespace SmartParkingApp.ClassLibrary
         public ParkingManager(string dataPath)
         {
             DataPath = dataPath;
+
+            // Create logger which logs into a specific file
+            string logPath = Path.Combine(dataPath, "Logs");
+
+            if (!Directory.Exists(logPath))
+            {
+                Directory.CreateDirectory(logPath);
+            }
+            logPath = Path.Combine(logPath, "logs_" + DateTime.Now.Date.ToString() + ".txt");
+            Log.Logger = new LoggerConfiguration().
+                MinimumLevel.Debug().
+                WriteTo.File(logPath).
+                CreateLogger();
             LoadData();
         }
 
@@ -232,7 +246,7 @@ namespace SmartParkingApp.ClassLibrary
             {
                 usr.Id = 1;
             }
-
+            Log.Information("New User Registered {UserName} {UserId}", usr.Name, usr.Id);
             // Add user to users collection
             users.Add(usr);
             Serialize(DataPath + "\\Users.json", users);
@@ -256,9 +270,11 @@ namespace SmartParkingApp.ClassLibrary
 
             if (found == null)
             {
+                Log.Information("No user was found with the provided credentials: {UserName} {Phone}", usr.Name, usr.Phone);
                 return "No user with this name was found";
             }
 
+            // Check password
             if (usr.PasswordHash == found.PasswordHash)
             {
                 if (found.UserRole != usr.UserRole)
@@ -268,6 +284,7 @@ namespace SmartParkingApp.ClassLibrary
             }
             else
             {
+                Log.Information("Invalid user details dupplied");
                 return "Invalid username or password";
             }
         }
@@ -301,6 +318,8 @@ namespace SmartParkingApp.ClassLibrary
 
             activeSessions.Add(session);
             SaveData();
+
+            Log.Information("New parking session started {CarPlateNumber}", carPlateNumber);
             return session;
         }
 
@@ -326,6 +345,10 @@ namespace SmartParkingApp.ClassLibrary
             }
         }
 
+
+        /// <summary>
+        /// Calculates remaining parking cost
+        /// </summary>
         public decimal GetRemainingCost(int ticketNumber)
         {
             DateTime currentDt = DateTime.Now;
@@ -334,6 +357,7 @@ namespace SmartParkingApp.ClassLibrary
             double diff = (currentDt - (session.PaymentDt ?? session.EntryDt)).TotalMinutes;
             return GetCost(diff);
         }
+
 
         public void PayForParking(int ticketNumber, decimal amount)
         {
@@ -356,6 +380,8 @@ namespace SmartParkingApp.ClassLibrary
                 if ((currentDt - session.PaymentDt.Value).TotalMinutes <= freeLeavePeriod)
                 {
                     CompleteSession(session, currentDt);
+                    Log.Information("Parking session completed successfully {SessionEntryDate} {SessionExitDate} {TotalPayment}", 
+                        session.EntryDt, session.ExitDt, session.TotalPayment);
                     return true;
                 }
                 else
@@ -370,7 +396,10 @@ namespace SmartParkingApp.ClassLibrary
                 if ((currentDt - session.EntryDt).TotalMinutes <= freeLeavePeriod)
                 {
                     session.TotalPayment = 0;
-                    CompleteSession(session, currentDt);
+                    Log.Information("Parking session completed successfully {SessionEntryDate} {SessionExitDate}",
+                       session.EntryDt, session.ExitDt);
+
+                   CompleteSession(session, currentDt);
                     return true;
                 }
                 else
@@ -391,6 +420,9 @@ namespace SmartParkingApp.ClassLibrary
                 }
             }
         }
+
+
+
 
         #region Helper methods
         private ParkingSession GetSessionByTicketNumber(int ticketNumber)
@@ -439,9 +471,6 @@ namespace SmartParkingApp.ClassLibrary
             public int Capacity { get; set; }
         }
 
-        //private const string TariffsFileName = "data\\tariffs.json";
-        //private const string ParkingDataFileName = "data\\parkingdata.json";
-        //private const string UsersFileName = "data\\users.json";
 
         private void LoadData()
         {
