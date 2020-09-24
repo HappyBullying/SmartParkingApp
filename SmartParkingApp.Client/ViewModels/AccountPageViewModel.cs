@@ -3,10 +3,12 @@ using SmartParkingApp.ClassLibrary.Models;
 using SmartParkingApp.Client.Commands;
 using System;
 using System.ComponentModel;
+using Prism.Mvvm;
+using Prism.Commands;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class AccountPageViewModel : INotifyPropertyChanged
+    class AccountPageViewModel : BindableBase
     {
         // Properties for DataBinding
         /************************************************************************************/
@@ -17,7 +19,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _Name = value;
-                OnPropertyChanged("Name");
+                SetProperty(ref _Name, value, "Name");
             }
         }
         private string _Name;
@@ -31,7 +33,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _CarPlateNumber = value;
-                OnPropertyChanged("CarPlateNumber");
+                SetProperty(ref _CarPlateNumber, value, "CarPlateNumber");
             }
         }
         private string _CarPlateNumber;
@@ -46,7 +48,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _Phone = value;
-                OnPropertyChanged("Phone");
+                SetProperty(ref _Phone, value, "Phone");
             }
         }
         private string _Phone;
@@ -54,7 +56,17 @@ namespace SmartParkingApp.Client.ViewModels
 
 
         // LogOut Command
-        public AccountCommand LogOutCommand { get; set; }
+        public DelegateCommand LogOutCommand { get; set; }
+        private Action logOutAction;
+        public bool CanExecute()
+        {
+            return true;
+        }
+
+        public void Execute()
+        {
+            logOutAction?.Invoke();
+        }
         /************************************************************************************/
 
 
@@ -66,16 +78,12 @@ namespace SmartParkingApp.Client.ViewModels
         public AccountPageViewModel(int userId, Action logout, ParkingManager pk)
         {
             _pk = pk;
-            LogOutCommand = new AccountCommand(logout);
+            logOutAction = logout;
+            LogOutCommand = new DelegateCommand(Execute, CanExecute);
             User usr = _pk.GetUserById(userId);
             Name = usr.Name;
             CarPlateNumber = usr.CarPlateNumber;
             Phone = usr.Phone;
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }
