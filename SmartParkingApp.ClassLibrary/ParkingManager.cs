@@ -12,10 +12,15 @@ namespace SmartParkingApp.ClassLibrary
     {
         private LocalJsonDb db;
 
-        public ParkingManager(string dataPath)
+        public ParkingManager()
+        {
+            
+        }
+
+
+        public void Initialize(string dataPath)
         {
             db = new LocalJsonDb(dataPath);
-
             // Create logger which logs into a specific file
             Log.Logger = new LoggerConfiguration().
                 MinimumLevel.Debug().
@@ -23,6 +28,7 @@ namespace SmartParkingApp.ClassLibrary
                 CreateLogger();
             db.LoadData();
         }
+
 
 
 

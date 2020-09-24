@@ -57,10 +57,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Commands\AccountCommand.cs" />
-    <Compile Include="Commands\CurSesCommand.cs" />
-    <Compile Include="Commands\LoginCommand.cs" />
-    <Compile Include="Commands\RegisterCommand.cs" />
     <Compile Include="IssueWindow.xaml.cs">
       <DependentUpon>IssueWindow.xaml</DependentUpon>
     </Compile>
@@ -182,7 +178,13 @@
     <PackageReference Include="Microsoft.Extensions.Primitives">
       <Version>3.0.1</Version>
     </PackageReference>
+    <PackageReference Include="Ninject">
+      <Version>3.3.4</Version>
+    </PackageReference>
     <PackageReference Include="Prism.Core">
+      <Version>7.2.0.1422</Version>
+    </PackageReference>
+    <PackageReference Include="Prism.Wpf">
       <Version>7.2.0.1422</Version>
     </PackageReference>
     <PackageReference Include="System.Buffers">
@@ -203,6 +205,9 @@
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

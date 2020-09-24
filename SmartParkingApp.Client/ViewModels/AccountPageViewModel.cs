@@ -1,8 +1,6 @@
 ﻿using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
-using SmartParkingApp.Client.Commands;
 using System;
-using System.ComponentModel;
 using Prism.Mvvm;
 using Prism.Commands;
 
