@@ -1,16 +1,17 @@
-﻿using SmartParkingApp.ClassLibrary;
+﻿using Prism.Commands;
+using Prism.Mvvm;
+using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
-using SmartParkingApp.Client.Commands;
 using System;
-using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class RegisterViewModel : INotifyPropertyChanged
+    class RegisterViewModel : BindableBase
     {
         
         // Properties for DataBinding
@@ -21,8 +22,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _usernameColor; }
             private set
             {
-                _usernameColor = value;
-                OnPropertyChanged("UsernameColor");
+                SetProperty(ref _usernameColor, value, "UsernameColor");
             }
         }
         private Color _usernameColor = Colors.Chocolate;
@@ -35,8 +35,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _passwordColor; }
             private set
             {
-                _passwordColor = value;
-                OnPropertyChanged("PasswordColor");
+                SetProperty(ref _passwordColor, value, "PasswordColor");
             }
         }
         private Color _passwordColor = Colors.Chocolate;
@@ -49,8 +48,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _carPlateNumberColor; }
             private set
             {
-                _carPlateNumberColor = value;
-                OnPropertyChanged("CarPlateNumber");
+                SetProperty(ref _carPlateNumberColor, value, "CarPlateNumber");
             }
         }
         private Color _carPlateNumberColor = Colors.Chocolate;
@@ -63,25 +61,11 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _phoneNumberColor; }
             private set
             {
-                _phoneNumberColor = value;
-                OnPropertyChanged("PhoneNumberColor");
+                SetProperty(ref _phoneNumberColor, value, "PhoneNumberColor");
             }
         }
         private Color _phoneNumberColor = Colors.Chocolate;
 
-
-
-        // Property for button enable
-        public bool IsBtnRegisterEnabled
-        {
-            get { return _isBtnRegisterEnabled; }
-            private set
-            {
-                _isBtnRegisterEnabled = value;
-                OnPropertyChanged("IsBtnRegisterEnabled");
-            }
-        }
-        private bool _isBtnRegisterEnabled = false;
 
 
         // Property for Name field
@@ -90,20 +74,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _userName; }
             set
             {
-                _userName = value;
-                OnPropertyChanged("UserName");
-                Match m = Regex.Match(value, "^[A-Za-z]*[A-Za-z]+[A-Za-z0-9_]*$");
-                if (m.Success)
-                {
-                    UsernameColor = Colors.Chocolate;
-                    _nameReady = true;
-                }
-                else
-                {
-                    UsernameColor = Colors.Red;
-                    _nameReady = false;
-                }
-                EnableRegisterButton();
+                SetProperty(ref _userName, value, "UserName");
             }
         }
         private string _userName = "Name";
@@ -115,19 +86,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _password; }
             set
             {
-                _password = value;
-                Match m = Regex.Match(value, @"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$");
-                if (m.Success)
-                {
-                    PasswordColor = Colors.Chocolate;
-                    _passwordReady = true;
-                }
-                else
-                {
-                    PasswordColor = Colors.Red;
-                    _passwordReady = false;
-                }
-                EnableRegisterButton();
+                SetProperty(ref _password, value, "Password");
             }
         }
         private string _password = "";
@@ -140,19 +99,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _carPlateNumber; }
             set
             {
-                _carPlateNumber = value;
-                OnPropertyChanged("CarPlateNumber");
-                if (value.Length == 0)
-                {
-                    _carPlateNumberColor = Colors.Red;
-                    _carPlateNumberReady = false;
-                }
-                else
-                {
-                    _carPlateNumberColor = Colors.Chocolate;
-                    _carPlateNumberReady = true;
-                }
-                EnableRegisterButton();
+                SetProperty(ref _carPlateNumber, value, "CarPlateNumber");
             }
         }
         private string _carPlateNumber = "CarPlateNumber";
@@ -166,45 +113,15 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _phoneNumber; }
             set
             {
-                _phoneNumber = value;
-                OnPropertyChanged("PhoneNumber");
-                Match m = Regex.Match(value, @"^((\+[0-9])+([0-9]){10,16})$");
-
-                if (m.Success)
-                {
-                    PhoneNumberColor = Colors.Chocolate;
-                    _phoneNumberReady = true;
-                }
-                else
-                {
-                    PhoneNumberColor = Colors.Red;
-                    _phoneNumberReady = false;
-                }
-                EnableRegisterButton();
+                SetProperty(ref _phoneNumber, value, "PhoneNumber");
             }
         }
         private string _phoneNumber = "PhoneNumber";
         
-        
-        private bool _nameReady = false;
-        private bool _passwordReady = false;
-        private bool _carPlateNumberReady = true;
-        private bool _phoneNumberReady = false;
-        private void EnableRegisterButton()
-        {
-            if (_nameReady && _passwordReady && _carPlateNumberReady && _phoneNumberReady)
-            {
-                IsBtnRegisterEnabled = true;
-            }
-            else
-            {
-                IsBtnRegisterEnabled = false;
-            }
-        }
 
         // Register Command
-        public RegisterCommand RegisterUserCommand { get; private set; }
-        public RegisterCommand NavigateToLogin { get; private set; }
+        public DelegateCommand RegisterUserCommand { get; private set; }
+        public ICommand NavigateToLogin { get; private set; }
 
         /************************************************************************************/
 
@@ -222,8 +139,12 @@ namespace SmartParkingApp.Client.ViewModels
         {
             _userRole = userRole;
             _pkManager = pkm;
-            RegisterUserCommand = new RegisterCommand(Register);
-            NavigateToLogin = new RegisterCommand(navigateToLogin);
+            RegisterUserCommand = new DelegateCommand(Register, RegisterCanExecute).
+                ObservesProperty(()=> UserName).
+                ObservesProperty(()=> Password).
+                ObservesProperty(()=> CarPlateNumber).
+                ObservesProperty(()=> PhoneNumber);
+            NavigateToLogin = new DelegateCommand(navigateToLogin, () => true);
         }
 
         
@@ -267,11 +188,71 @@ namespace SmartParkingApp.Client.ViewModels
             }
         }
 
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propName)
+        private bool RegisterCanExecute()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            bool uNameCond;
+            Match m = Regex.Match(_userName, "^[A-Za-z]*[A-Za-z]+[A-Za-z0-9_]*$");
+            if (m.Success)
+            {
+                UsernameColor = Colors.Chocolate;
+                uNameCond = true;
+            }
+            else
+            {
+                UsernameColor = Colors.Red;
+                uNameCond = false;
+            }
+
+            bool passwordCond;
+            m = Regex.Match(_password, @"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,35}$");
+            if (m.Success)
+            {
+                PasswordColor = Colors.Chocolate;
+                passwordCond = true;
+            }
+            else
+            {
+                PasswordColor = Colors.Red;
+                passwordCond = false;
+            }
+
+
+
+            bool carPlateCond;
+            if (_carPlateNumber.Length == 0)
+            {
+                _carPlateNumberColor = Colors.Red;
+                carPlateCond = false;
+            }
+            else
+            {
+                _carPlateNumberColor = Colors.Chocolate;
+                carPlateCond = true;
+            }
+
+
+            bool phoneCond;
+            m = Regex.Match(_phoneNumber, @"^((\+[0-9])+([0-9]){10,16})$");
+
+            if (m.Success)
+            {
+                PhoneNumberColor = Colors.Chocolate;
+                phoneCond = true;
+            }
+            else
+            {
+                PhoneNumberColor = Colors.Red;
+                phoneCond = false;
+            }
+
+            if (uNameCond && passwordCond && carPlateCond && phoneCond)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

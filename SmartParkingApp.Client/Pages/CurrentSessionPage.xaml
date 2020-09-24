@@ -42,18 +42,18 @@
             </TextBlock>
         </DockPanel>
         <StackPanel Margin="0, 25, 0, 0" Orientation="Vertical">
-            <Button Margin="0, 15, 0, 0" HorizontalAlignment="Left" IsEnabled="{Binding RenewEnabled, Mode=OneWay}"
+            <Button Margin="0, 15, 0, 0" HorizontalAlignment="Left"
                 Style="{StaticResource ActionButton}"
                 Command="{Binding RenewCommand}" Width="60" Height="35" FontSize="20">
                 <iconPacks:PackIconMaterial Kind="Reload" />
             </Button>
             <Button Margin="0, 15, 0, 0" HorizontalAlignment="Left"
-                Style="{StaticResource ActionButton}" IsEnabled="{Binding EnterEnabled, Mode=OneWay}"
+                Style="{StaticResource ActionButton}"
                 Command="{Binding EnterCommand}" Width="180" Height="35" FontSize="20" Content="Enter the Parking"/>
-            <Button Margin="0, 20, 0, 0" HorizontalAlignment="Left" IsEnabled="{Binding PayEnabled, Mode=OneWay}" 
+            <Button Margin="0, 20, 0, 0" HorizontalAlignment="Left"
                 Style="{StaticResource ActionButton}" 
                 Command="{Binding PayCommand}" Width="180" Height="35" FontSize="20" Content="Pay for Parking"/>
-            <Button Margin="0, 20, 0, 0" HorizontalAlignment="Left" IsEnabled="{Binding LeaveEnabled, Mode=OneWay}"
+            <Button Margin="0, 20, 0, 0" HorizontalAlignment="Left"
                 Style="{StaticResource ActionButton}" 
                 Command="{Binding LeaveCommand}" Width="180" Height="35" FontSize="20" Content="Leave the Parking"/>
         </StackPanel>

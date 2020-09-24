@@ -1,4 +1,6 @@
-﻿using SmartParkingApp.ClassLibrary;
+﻿using Prism.Commands;
+using Prism.Mvvm;
+using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
 using SmartParkingApp.Client.Commands;
 using System;
@@ -6,7 +8,7 @@ using System.ComponentModel;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class CurrentSessionPageViewModel : INotifyPropertyChanged
+    class CurrentSessionPageViewModel : BindableBase
     {
         // Properties for DataBinding
         /************************************************************************************/
@@ -16,8 +18,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _CarPlateNumber; }
             private set
             {
-                _CarPlateNumber = value;
-                OnPropertyChanged("CarPlateNumber");
+                SetProperty(ref _CarPlateNumber, value, "CarPlateNumber");
             }
         }
         private string _CarPlateNumber;
@@ -30,8 +31,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _EntryDate; }
             private set
             {
-                _EntryDate = value;
-                OnPropertyChanged("EntryDate");
+                SetProperty(ref _EntryDate, value, "EntryDate");
             }
         }
         private DateTime _EntryDate;
@@ -45,8 +45,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _Cost; }
             private set
             {
-                _Cost = value;
-                OnPropertyChanged("Cost");
+                SetProperty(ref _Cost, value, "Cost");
             }
         }
         private decimal _Cost;
@@ -59,8 +58,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _EnterEnabled; }
             private set
             {
-                _EnterEnabled = value;
-                OnPropertyChanged("EnterEnabled");
+                SetProperty(ref _EnterEnabled, value, "EnterEnabled");
             }
         }
         private bool _EnterEnabled = true;
@@ -74,8 +72,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _PayEnabled; }
             private set
             {
-                _PayEnabled = value;
-                OnPropertyChanged("PayEnabled");
+                SetProperty(ref _PayEnabled, value, "PayEnabled");
             }
         }
         private bool _PayEnabled = false;
@@ -89,8 +86,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _LeaveEnable; }
             private set
             {
-                _LeaveEnable = value;
-                OnPropertyChanged("LeaveEnabled");
+                SetProperty(ref _LeaveEnable, value, "LeaveEnabled");
             }
         }
         private bool _LeaveEnable = false;
@@ -104,18 +100,17 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _RenewEnabled; }
             private set
             {
-                _RenewEnabled = value;
-                OnPropertyChanged("RenewEnabled");
+                SetProperty(ref _RenewEnabled, value, "RenewEnabled");
             }
         }
         private bool _RenewEnabled = false;
 
 
         // Commands
-        public CurSesCommand EnterCommand { get; set; }
-        public CurSesCommand PayCommand { get; set; }
-        public CurSesCommand LeaveCommand { get; set; }
-        public CurSesCommand RenewCommand { get; set; }
+        public DelegateCommand EnterCommand { get; set; }
+        public DelegateCommand PayCommand { get; set; }
+        public DelegateCommand LeaveCommand { get; set; }
+        public DelegateCommand RenewCommand { get; set; }
         /************************************************************************************/
 
 
@@ -137,10 +132,14 @@ namespace SmartParkingApp.Client.ViewModels
             _User = _pk.GetUserById(UserId);
 
             issueWindow = new IssueWindow("");
-            EnterCommand = new CurSesCommand(new Action(StartParking));
-            PayCommand = new CurSesCommand(new Action(Pay));
-            RenewCommand = new CurSesCommand(new Action(RenewCost));
-            LeaveCommand = new CurSesCommand(new Action(TryToLeave));
+            EnterCommand = new DelegateCommand(StartParking).
+                ObservesProperty(() => EnterEnabled);
+            PayCommand = new DelegateCommand(Pay).
+                ObservesProperty(() => PayEnabled);
+            RenewCommand = new DelegateCommand(RenewCost, CanExecuteRenew).
+                ObservesProperty(() => RenewEnabled);
+            LeaveCommand = new DelegateCommand(TryToLeave).
+                ObservesProperty(() => LeaveEnabled);
             LoadActiveIfExists();
         }
 
@@ -149,7 +148,6 @@ namespace SmartParkingApp.Client.ViewModels
 
 
 
-        // Перевести вGoogleBingif the user has closed the 
         // application it is necessary to download data from the 
         // active sessionif the user has closed the application it is 
         // necessary to download data from the active session
@@ -176,8 +174,6 @@ namespace SmartParkingApp.Client.ViewModels
 
             CarPlateNumber = _currentSession.CarPlateNumber;
             EntryDate = _currentSession.EntryDt;
-
-
 
             EnterEnabled = false;
             PayEnabled = true;
@@ -235,11 +231,16 @@ namespace SmartParkingApp.Client.ViewModels
             Cost = _pk.GetRemainingCost(_currentSession.TicketNumber);
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        
-        private void OnPropertyChanged(string propName)
+        private bool CanExecuteRenew()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            if (_currentSession == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }

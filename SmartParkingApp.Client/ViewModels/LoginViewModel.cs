@@ -1,15 +1,15 @@
-﻿using SmartParkingApp.ClassLibrary;
+﻿using Prism.Commands;
+using Prism.Mvvm;
+using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
-using SmartParkingApp.Client.Commands;
 using System;
-using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Media;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class LoginViewModel : INotifyPropertyChanged
+    class LoginViewModel : BindableBase
     {
         // Properties for DataBinding
         /************************************************************************************/
@@ -19,8 +19,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _usernameColor; }
             private set
             {
-                _usernameColor = value;
-                OnPropertyChanged("UsernameColor");
+                SetProperty(ref _usernameColor, value, "UsernameColor");
             }
         }
         private Color _usernameColor = Colors.Chocolate;
@@ -33,25 +32,10 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _passwordColor; }
             private set
             {
-                _passwordColor = value;
-                OnPropertyChanged("PasswordColor");
+                SetProperty(ref _passwordColor, value, "PasswordColor");
             }
         }
         private Color _passwordColor = Colors.Chocolate;
-
-
-
-        // Property for button enable
-        public bool IsBtnRegisterEnabled
-        {
-            get { return _isBtnRegisterEnabled; }
-            private set
-            {
-                _isBtnRegisterEnabled = value;
-                OnPropertyChanged("IsBtnRegisterEnabled");
-            }
-        }
-        private bool _isBtnRegisterEnabled = true;
 
 
 
@@ -61,20 +45,7 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _userName; }
             set
             {
-                _userName = value;
-                OnPropertyChanged("UserName");
-
-                if (value.Length == 0)
-                {
-                    _nameReady = false;
-                    UsernameColor = Colors.Red;
-                }
-                else
-                {
-                    _nameReady = true;
-                    UsernameColor = Colors.Chocolate;
-                }
-                EnableLoginButton();
+                SetProperty(ref _userName, value, "UserName");
             }
         }
         private string _userName = "Name";
@@ -87,50 +58,33 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _password; }
             set
             {
-                _password = value;
-                if (value.Length == 0)
-                {
-                    _passwordReady = false;
-                    PasswordColor = Colors.Red;
-                }
-                else
-                {
-                    _passwordReady = true;
-                    PasswordColor = Colors.Chocolate;
-                }
-                EnableLoginButton();
+                SetProperty(ref _password, value, "Password");
             }
         }
         private string _password = "somepassword";
 
 
-        private bool _nameReady = true;
-        private bool _passwordReady = true;
-
-        private void EnableLoginButton()
+        private bool LoginCanExecute()
         {
-            if (_nameReady && _passwordReady)
+            bool cond1 = _userName.Length > 0;
+            bool cond2 = _password.Length > 0;
+
+            UsernameColor = cond1 ? Colors.Chocolate : Colors.Red;
+            PasswordColor = cond2 ? Colors.Chocolate : Colors.Red;
+
+            if (cond1 && cond2)
             {
-                IsBtnRegisterEnabled = true;
+                return true;
             }
             else
             {
-                IsBtnRegisterEnabled = false;
+                return false;
             }
         }
         // LoginCommand
-        public LoginCommand Login_Command { get; private set; }
-        public LoginCommand NavigateToRegister { get; private set; }
+        public DelegateCommand Login_Command { get; private set; }
+        public DelegateCommand NavigateToRegister { get; private set; }
         /************************************************************************************/
-
-
-
-
-
-
-
-
-
 
 
 
@@ -142,8 +96,10 @@ namespace SmartParkingApp.Client.ViewModels
         {
             _userRole = userRole;
             _pkManager = pkm;
-            Login_Command = new LoginCommand(Login);
-            NavigateToRegister = new LoginCommand(navToRegister);
+            Login_Command = new DelegateCommand(Login, LoginCanExecute).
+                ObservesProperty(() => Password).
+                ObservesProperty(() => UserName);
+            NavigateToRegister = new DelegateCommand(navToRegister);
             _navToMenue = navToMenue;
         }
 
@@ -183,13 +139,6 @@ namespace SmartParkingApp.Client.ViewModels
             {
                 _navToMenue?.Invoke(userId);
             }
-        }
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }

@@ -156,7 +156,6 @@
                             HorizontalAlignment="Center">
                     <Button Width="160"
                             Height="35"
-                            IsEnabled="{Binding IsBtnRegisterEnabled, Mode=OneWay}"
                             Style="{StaticResource ActionButton}"
                             Command="{Binding RegisterUserCommand}"
                             HorizontalAlignment="Center"
