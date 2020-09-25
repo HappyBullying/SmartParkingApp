@@ -72,11 +72,13 @@
     <Compile Include="Pages\CurrentSessionPage.xaml.cs">
       <DependentUpon>CurrentSessionPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StaticVars.cs" />
     <Compile Include="ViewModels\AccountPageViewModel.cs" />
+    <Compile Include="ViewModels\ClientMenuePageViewModel.cs" />
     <Compile Include="ViewModels\CompleteOperationsViewModel.cs" />
     <Compile Include="ViewModels\CurrentSessionPageViewModel.cs" />
-    <Compile Include="ViewModels\LoginViewModel.cs" />
-    <Compile Include="ViewModels\RegisterViewModel.cs" />
+    <Compile Include="ViewModels\LoginPageViewModel.cs" />
+    <Compile Include="ViewModels\RegistrationPageViewModel.cs" />
     <Page Include="ButtonDictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -178,10 +180,10 @@
     <PackageReference Include="Microsoft.Extensions.Primitives">
       <Version>3.0.1</Version>
     </PackageReference>
-    <PackageReference Include="Ninject">
-      <Version>3.3.4</Version>
-    </PackageReference>
     <PackageReference Include="Prism.Core">
+      <Version>7.2.0.1422</Version>
+    </PackageReference>
+    <PackageReference Include="Prism.Unity">
       <Version>7.2.0.1422</Version>
     </PackageReference>
     <PackageReference Include="Prism.Wpf">

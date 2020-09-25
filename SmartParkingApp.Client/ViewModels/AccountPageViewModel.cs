@@ -3,11 +3,16 @@ using SmartParkingApp.ClassLibrary.Models;
 using System;
 using Prism.Mvvm;
 using Prism.Commands;
+using Prism.Regions;
+using Prism.Ioc;
+using System.Windows.Input;
 
 namespace SmartParkingApp.Client.ViewModels
 {
     class AccountPageViewModel : BindableBase
     {
+        private readonly IRegionManager regionManager;
+
         // Properties for DataBinding
         /************************************************************************************/
         // Property for Name
@@ -54,17 +59,17 @@ namespace SmartParkingApp.Client.ViewModels
 
 
         // LogOut Command
-        public DelegateCommand LogOutCommand { get; set; }
-        private Action logOutAction;
-        public bool CanExecute()
+        public ICommand LogOutCommand { get; set; }
+        public bool CanExecuteLogOut()
         {
             return true;
         }
 
-        public void Execute()
+        private void LogOut()
         {
-            logOutAction?.Invoke();
+            regionManager.RequestNavigate("ContentRegion", "LoginPage");
         }
+
         /************************************************************************************/
 
 
@@ -73,12 +78,11 @@ namespace SmartParkingApp.Client.ViewModels
 
 
         private ParkingManager _pk;
-        public AccountPageViewModel(int userId, Action logout, ParkingManager pk)
+        public AccountPageViewModel(IRegionManager rM)
         {
-            _pk = pk;
-            logOutAction = logout;
-            LogOutCommand = new DelegateCommand(Execute, CanExecute);
-            User usr = _pk.GetUserById(userId);
+            _pk = StaticVars.manager;
+            LogOutCommand = new DelegateCommand(LogOut, CanExecuteLogOut);
+            User usr = _pk.GetUserById(StaticVars.TransferID);
             Name = usr.Name;
             CarPlateNumber = usr.CarPlateNumber;
             Phone = usr.Phone;

@@ -1,9 +1,10 @@
-﻿using Prism.Mvvm;
+﻿using Prism.Ioc;
+using Prism.Mvvm;
+using Prism.Regions;
 using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 
 namespace SmartParkingApp.Client.ViewModels
 {
@@ -16,10 +17,10 @@ namespace SmartParkingApp.Client.ViewModels
 
 
         private ParkingManager _pk;
-        public CompleteOperationsViewModel(int userId, ParkingManager pk)
+        public CompleteOperationsViewModel(IRegionManager rM)
         {
-            _pk = pk;
-            IEnumerable<ParkingSession> received = _pk.GetCompletedSessionsForUser(userId);
+            _pk = StaticVars.manager;
+            IEnumerable<ParkingSession> received = _pk.GetCompletedSessionsForUser(StaticVars.TransferID);
             Sessions = new ObservableCollection<ParkingSession>(received);
             
         }

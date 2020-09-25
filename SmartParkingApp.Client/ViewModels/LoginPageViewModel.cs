@@ -1,5 +1,7 @@
 ﻿using Prism.Commands;
+using Prism.Ioc;
 using Prism.Mvvm;
+using Prism.Regions;
 using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
 using System;
@@ -7,10 +9,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Media;
 
-namespace SmartParkingApp.Client.ViewModels
+namespace SmartParkingApp.Client.Pages
 {
-    class LoginViewModel : BindableBase
+    class LoginPageViewModel : BindableBase
     {
+        private readonly IRegionManager regionManager;
+
         // Properties for DataBinding
         /************************************************************************************/
         // Color for border relative to username field
@@ -91,16 +95,20 @@ namespace SmartParkingApp.Client.ViewModels
 
         private readonly string _userRole;
         private ParkingManager _pkManager;
-        private Action<int> _navToMenue;
-        public LoginViewModel(string userRole, ParkingManager pkm, Action<int> navToMenue, Action navToRegister)
+        public LoginPageViewModel(IRegionManager rM)
         {
-            _userRole = userRole;
-            _pkManager = pkm;
+            regionManager = rM;
+            _userRole = UserRole.Client;
+            _pkManager = StaticVars.manager;
             Login_Command = new DelegateCommand(Login, LoginCanExecute).
                 ObservesProperty(() => Password).
                 ObservesProperty(() => UserName);
-            NavigateToRegister = new DelegateCommand(navToRegister);
-            _navToMenue = navToMenue;
+            NavigateToRegister = new DelegateCommand(NavigateToRegisterImplim);
+        }
+
+        private void NavigateToRegisterImplim()
+        {
+            regionManager.RequestNavigate("ContentRegion", "RegistrationPage");
         }
 
         private void Login()
@@ -137,7 +145,7 @@ namespace SmartParkingApp.Client.ViewModels
             }
             else
             {
-                _navToMenue?.Invoke(userId);
+                regionManager.RequestNavigate("ContentRegion", "ClientMenuePage");
             }
         }
     }

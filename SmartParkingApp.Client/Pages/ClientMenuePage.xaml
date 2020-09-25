@@ -5,6 +5,8 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
       xmlns:local="clr-namespace:SmartParkingApp.Client.Pages"
+      xmlns:prism="http://prismlibrary.com/"
+      prism:ViewModelLocator.AutoWireViewModel="True"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800">
 
@@ -12,25 +14,30 @@
         <Grid Width="60" DockPanel.Dock="Left"  Background="Transparent" HorizontalAlignment="Left">
             <StackPanel Margin="2, 5, 2, 0" Background="Transparent" Orientation="Vertical">
                 <Button Margin="0, 0, 0, 3" VerticalAlignment="Top"
-                        x:Name="ListButton" Click="ListButton_Click"
+                        x:Name="ListButton" Command="{Binding ListButtonCommand}"
                         Style="{StaticResource ActionButton}"
                         Background="Transparent" BorderThickness="0">
                     <iconPacks:PackIconMaterial Opacity="0.8" Kind="ViewList" Height="25" Width="25" Margin="10"/>
                 </Button>
                 <Button Margin="0, 0, 0, 3" VerticalAlignment="Top" Style="{StaticResource ActionButton}"
-                        x:Name="SessionButton" Click="SessionButton_Click"
+                        x:Name="SessionButton" Command="{Binding SessionButtonCommand}"
                         Background="Transparent" BorderThickness="0">
                     <iconPacks:PackIconMaterial Opacity="0.8" Kind="Play" Height="25" Width="25" Margin="10"/>
                 </Button>
                 <Button Margin="0, 0, 0, 3" VerticalAlignment="Top" Style="{StaticResource ActionButton}"
-                        x:Name="AccountButtnon" Click="AccountButtnon_Click"
+                        x:Name="AccountButtnon" Command="{Binding AccountButtnonCommand}"
                         Background="Transparent" BorderThickness="0">
                     <iconPacks:PackIconMaterial Opacity="0.8" Kind="Account" Height="25" Width="25" Margin="10"/>
                 </Button>
             </StackPanel>
         </Grid>
         <Border BorderThickness="1" BorderBrush="Gray">
-            <Frame x:Name="ContentFrame" DockPanel.Dock="Left" Background="Transparent"/>
+            <Frame x:Name="ContentFrame" DockPanel.Dock="Left"
+                   prism:RegionManager.RegionName="InnerContentRegion" Background="Transparent">
+                <Frame.Content>
+                    <local:AccountPage/>
+                </Frame.Content>
+            </Frame>
         </Border>
     </DockPanel>
 </Page>

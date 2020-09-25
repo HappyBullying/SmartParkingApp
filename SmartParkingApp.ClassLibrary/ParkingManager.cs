@@ -12,13 +12,7 @@ namespace SmartParkingApp.ClassLibrary
     {
         private LocalJsonDb db;
 
-        public ParkingManager()
-        {
-            
-        }
-
-
-        public void Initialize(string dataPath)
+        public ParkingManager(string dataPath)
         {
             db = new LocalJsonDb(dataPath);
             // Create logger which logs into a specific file

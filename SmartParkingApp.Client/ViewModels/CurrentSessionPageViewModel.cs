@@ -1,9 +1,10 @@
 ﻿using Prism.Commands;
+using Prism.Ioc;
 using Prism.Mvvm;
+using Prism.Regions;
 using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
 using System;
-using System.ComponentModel;
 
 namespace SmartParkingApp.Client.ViewModels
 {
@@ -125,10 +126,10 @@ namespace SmartParkingApp.Client.ViewModels
         private bool _payed = false;
         private IssueWindow issueWindow;
 
-        public CurrentSessionPageViewModel(int UserId, ParkingManager pkm)
+        public CurrentSessionPageViewModel(IRegionManager rM)
         {
-            _pk = pkm;
-            _User = _pk.GetUserById(UserId);
+            _pk = StaticVars.manager;
+            _User = _pk.GetUserById(StaticVars.TransferID);
 
             issueWindow = new IssueWindow("");
             EnterCommand = new DelegateCommand(StartParking).

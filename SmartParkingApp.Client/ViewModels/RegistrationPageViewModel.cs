@@ -1,5 +1,7 @@
 ﻿using Prism.Commands;
+using Prism.Ioc;
 using Prism.Mvvm;
+using Prism.Regions;
 using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
 using System;
@@ -11,9 +13,9 @@ using System.Windows.Media;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class RegisterViewModel : BindableBase
+    class RegistrationPageViewModel : BindableBase
     {
-        
+
         // Properties for DataBinding
         /************************************************************************************/
         // Color for border relative to username field
@@ -117,7 +119,7 @@ namespace SmartParkingApp.Client.ViewModels
             }
         }
         private string _phoneNumber = "PhoneNumber";
-        
+
 
         // Register Command
         public DelegateCommand RegisterUserCommand { get; private set; }
@@ -135,19 +137,22 @@ namespace SmartParkingApp.Client.ViewModels
 
         private readonly string _userRole;
         private ParkingManager _pkManager;
-        public RegisterViewModel(string userRole, ParkingManager pkm, Action navigateToLogin)
+        public RegistrationPageViewModel(IRegionManager rM)
         {
-            _userRole = userRole;
-            _pkManager = pkm;
+            _userRole = UserRole.Client;
+            _pkManager = StaticVars.manager;
             RegisterUserCommand = new DelegateCommand(Register, RegisterCanExecute).
-                ObservesProperty(()=> UserName).
-                ObservesProperty(()=> Password).
-                ObservesProperty(()=> CarPlateNumber).
-                ObservesProperty(()=> PhoneNumber);
-            NavigateToLogin = new DelegateCommand(navigateToLogin, () => true);
+                ObservesProperty(() => UserName).
+                ObservesProperty(() => Password).
+                ObservesProperty(() => CarPlateNumber).
+                ObservesProperty(() => PhoneNumber);
+            NavigateToLogin = new DelegateCommand(() =>
+            {
+                rM.RequestNavigate("ContentRegion", "LoginPage");
+            }, () => true);
         }
 
-        
+
         private void Register()
         {
             // Compute MD5 hash for password
