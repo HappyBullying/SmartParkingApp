@@ -11,25 +11,28 @@ namespace SmartParkingApp.ClassLibrary.Logging
     {
         public void Format(LogEvent logEvent, TextWriter output)
         {
-            output.WriteLine("----------------------------------------------------------------");
-            output.WriteLine($"Log timestamp - {logEvent.Timestamp} | Level: {logEvent.Level}");
-            output.WriteLine("----------------------------------------------------------------");
-
-            foreach (var item in logEvent.Properties)
+            if (logEvent.Level.ToString() != "Information")
             {
-                output.WriteLine(item.Key + " : " + item.Value);
-            }
+                output.WriteLine("----------------------------------------------------------------");
+                output.WriteLine($"Log timestamp - {logEvent.Timestamp} | Level: {logEvent.Level}");
+                output.WriteLine("----------------------------------------------------------------");
 
-            if (logEvent.Exception != null)
-            {
-                output.WriteLine("-----------------------EXCEPTION DETAILS---------------------");
-                output.Write("Exception - {0}", logEvent.Exception);
-                output.Write("Stacktrace - {0}", logEvent.Exception.StackTrace);
-                output.Write("Message - {0}", logEvent.Exception.Message);
-                output.Write("Source - {0}", logEvent.Exception.Source);
-                output.Write("InnerException - {0}", logEvent.Exception.InnerException);
+                foreach (var item in logEvent.Properties)
+                {
+                    output.WriteLine(item.Key + " : " + item.Value);
+                }
+
+                if (logEvent.Exception != null)
+                {
+                    output.WriteLine("-----------------------EXCEPTION DETAILS---------------------");
+                    output.Write("Exception - {0}", logEvent.Exception);
+                    output.Write("Stacktrace - {0}", logEvent.Exception.StackTrace);
+                    output.Write("Message - {0}", logEvent.Exception.Message);
+                    output.Write("Source - {0}", logEvent.Exception.Source);
+                    output.Write("InnerException - {0}", logEvent.Exception.InnerException);
+                }
+                output.WriteLine("----------------------------------------------------------------");
             }
-            output.WriteLine("----------------------------------------------------------------");
         }
     }
 }

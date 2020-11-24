@@ -6,9 +6,12 @@ namespace SmartParkingApp.Client.Pages
 {
     public partial class CompletedOperations : Page
     {
-        public CompletedOperations()
+        public CompletedOperations(int userId, ParkingManager pk)
         {
             InitializeComponent();
+            DataContext = new CompleteOperationsViewModel(userId, pk);
+            ParkingSession.ItemsSource = (DataContext as CompleteOperationsViewModel).Sessions;
+            
         }
     }
 }

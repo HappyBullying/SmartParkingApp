@@ -12,7 +12,6 @@ namespace SmartParkingApp.Owner
     public partial class MainWindow : Window
     {
         private readonly string DataPath;
-        private readonly char csp = Path.DirectorySeparatorChar;
         private ParkingManager _pkManager;
 
         private Action navigateToRegister;
@@ -23,7 +22,7 @@ namespace SmartParkingApp.Owner
         public MainWindow()
         {
             InitializeComponent();
-            DataPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + csp + "SmartParkingApp" + csp + "Data";
+            DataPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\SmartParkingApp\\Data";
             PrepareFiles();
             _pkManager = new ParkingManager(DataPath);
 
@@ -67,17 +66,17 @@ namespace SmartParkingApp.Owner
                 Directory.CreateDirectory(DataPath);
             }
 
-            if (!File.Exists(DataPath + csp + "Users.json"))
+            if (!File.Exists(DataPath + "\\Users.json"))
             {
-                File.Create(DataPath + csp + "Users.json").Close();
+                File.Create(DataPath + "\\Users.json").Close();
             }
 
-            if (!File.Exists(DataPath + csp + "ParkingData.json"))
+            if (!File.Exists(DataPath + "\\ParkingData.json"))
             {
 
                 using (Stream _res = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("SmartParkingApp.Owner.Default.ParkingData.json"))
                 {
-                    using (FileStream file = new FileStream(DataPath + csp + "ParkingData.json", FileMode.Create))
+                    using (FileStream file = new FileStream(DataPath + "\\ParkingData.json", FileMode.Create))
                     {
                         _res.CopyTo(file);
                     }
@@ -85,11 +84,11 @@ namespace SmartParkingApp.Owner
 
             }
 
-            if (!File.Exists(DataPath + csp + "Tariffs.json"))
+            if (!File.Exists(DataPath + "\\Tariffs.json"))
             {
                 using (Stream _res = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("SmartParkingApp.Owner.Default.Tariffs.json"))
                 {
-                    using (FileStream file = new FileStream(DataPath + csp + "Tariffs.json", FileMode.Create))
+                    using (FileStream file = new FileStream(DataPath + "\\Tariffs.json", FileMode.Create))
                     {
                         _res.CopyTo(file);
                     }

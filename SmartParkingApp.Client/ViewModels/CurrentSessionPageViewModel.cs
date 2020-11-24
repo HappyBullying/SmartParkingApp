@@ -1,14 +1,12 @@
-﻿using Prism.Commands;
-using Prism.Ioc;
-using Prism.Mvvm;
-using Prism.Regions;
-using SmartParkingApp.ClassLibrary;
+﻿using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
+using SmartParkingApp.Client.Commands;
 using System;
+using System.ComponentModel;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class CurrentSessionPageViewModel : BindableBase
+    class CurrentSessionPageViewModel : INotifyPropertyChanged
     {
         // Properties for DataBinding
         /************************************************************************************/
@@ -18,7 +16,8 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _CarPlateNumber; }
             private set
             {
-                SetProperty(ref _CarPlateNumber, value, "CarPlateNumber");
+                _CarPlateNumber = value;
+                OnPropertyChanged("CarPlateNumber");
             }
         }
         private string _CarPlateNumber;
@@ -31,7 +30,8 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _EntryDate; }
             private set
             {
-                SetProperty(ref _EntryDate, value, "EntryDate");
+                _EntryDate = value;
+                OnPropertyChanged("EntryDate");
             }
         }
         private DateTime _EntryDate;
@@ -45,7 +45,8 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _Cost; }
             private set
             {
-                SetProperty(ref _Cost, value, "Cost");
+                _Cost = value;
+                OnPropertyChanged("Cost");
             }
         }
         private decimal _Cost;
@@ -58,7 +59,8 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _EnterEnabled; }
             private set
             {
-                SetProperty(ref _EnterEnabled, value, "EnterEnabled");
+                _EnterEnabled = value;
+                OnPropertyChanged("EnterEnabled");
             }
         }
         private bool _EnterEnabled = true;
@@ -72,7 +74,8 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _PayEnabled; }
             private set
             {
-                SetProperty(ref _PayEnabled, value, "PayEnabled");
+                _PayEnabled = value;
+                OnPropertyChanged("PayEnabled");
             }
         }
         private bool _PayEnabled = false;
@@ -86,7 +89,8 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _LeaveEnable; }
             private set
             {
-                SetProperty(ref _LeaveEnable, value, "LeaveEnabled");
+                _LeaveEnable = value;
+                OnPropertyChanged("LeaveEnabled");
             }
         }
         private bool _LeaveEnable = false;
@@ -100,17 +104,18 @@ namespace SmartParkingApp.Client.ViewModels
             get { return _RenewEnabled; }
             private set
             {
-                SetProperty(ref _RenewEnabled, value, "RenewEnabled");
+                _RenewEnabled = value;
+                OnPropertyChanged("RenewEnabled");
             }
         }
         private bool _RenewEnabled = false;
 
 
         // Commands
-        public DelegateCommand EnterCommand { get; set; }
-        public DelegateCommand PayCommand { get; set; }
-        public DelegateCommand LeaveCommand { get; set; }
-        public DelegateCommand RenewCommand { get; set; }
+        public CurSesCommand EnterCommand { get; set; }
+        public CurSesCommand PayCommand { get; set; }
+        public CurSesCommand LeaveCommand { get; set; }
+        public CurSesCommand RenewCommand { get; set; }
         /************************************************************************************/
 
 
@@ -126,20 +131,16 @@ namespace SmartParkingApp.Client.ViewModels
         private bool _payed = false;
         private IssueWindow issueWindow;
 
-        public CurrentSessionPageViewModel(IRegionManager rM)
+        public CurrentSessionPageViewModel(int UserId, ParkingManager pkm)
         {
-            _pk = StaticVars.manager;
-            _User = _pk.GetUserById(StaticVars.TransferID);
+            _pk = pkm;
+            _User = _pk.GetUserById(UserId);
 
             issueWindow = new IssueWindow("");
-            EnterCommand = new DelegateCommand(StartParking).
-                ObservesProperty(() => EnterEnabled);
-            PayCommand = new DelegateCommand(Pay).
-                ObservesProperty(() => PayEnabled);
-            RenewCommand = new DelegateCommand(RenewCost, CanExecuteRenew).
-                ObservesProperty(() => RenewEnabled);
-            LeaveCommand = new DelegateCommand(TryToLeave).
-                ObservesProperty(() => LeaveEnabled);
+            EnterCommand = new CurSesCommand(new Action(StartParking));
+            PayCommand = new CurSesCommand(new Action(Pay));
+            RenewCommand = new CurSesCommand(new Action(RenewCost));
+            LeaveCommand = new CurSesCommand(new Action(TryToLeave));
             LoadActiveIfExists();
         }
 
@@ -148,6 +149,7 @@ namespace SmartParkingApp.Client.ViewModels
 
 
 
+        // Перевести вGoogleBingif the user has closed the 
         // application it is necessary to download data from the 
         // active sessionif the user has closed the application it is 
         // necessary to download data from the active session
@@ -174,6 +176,8 @@ namespace SmartParkingApp.Client.ViewModels
 
             CarPlateNumber = _currentSession.CarPlateNumber;
             EntryDate = _currentSession.EntryDt;
+
+
 
             EnterEnabled = false;
             PayEnabled = true;
@@ -231,16 +235,11 @@ namespace SmartParkingApp.Client.ViewModels
             Cost = _pk.GetRemainingCost(_currentSession.TicketNumber);
         }
 
-        private bool CanExecuteRenew()
+        public event PropertyChangedEventHandler PropertyChanged;
+        
+        private void OnPropertyChanged(string propName)
         {
-            if (_currentSession == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }

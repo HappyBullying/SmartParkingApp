@@ -1,28 +1,46 @@
-﻿using SmartParkingApp.ClassLibrary.Models;
+﻿using Newtonsoft.Json;
+using SmartParkingApp.ClassLibrary.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Serilog;
-using SmartParkingApp.ClassLibrary.Logging;
 
 namespace SmartParkingApp.ClassLibrary
 {
     public class ParkingManager
     {
-        private LocalJsonDb db;
+        private List<ParkingSession> pastSessions;
+        private List<ParkingSession> activeSessions;
+        private List<Tariff> tariffTable;
+        private List<User> users;
+
+        private int parkingCapacity;
+        private int freeLeavePeriod;
+        private int nextTicketNumber;
+        private readonly string DataPath;
+
+
+
 
         public ParkingManager(string dataPath)
         {
-            db = new LocalJsonDb(dataPath);
+            DataPath = dataPath;
+
             // Create logger which logs into a specific file
+            string logPath = Path.Combine(dataPath, "Logs");
+
+            if (!Directory.Exists(logPath))
+            {
+                Directory.CreateDirectory(logPath);
+            }
+            logPath = Path.Combine(logPath, "logs_" + DateTime.Now.Date.ToString() + ".txt");
             Log.Logger = new LoggerConfiguration().
                 MinimumLevel.Debug().
-                WriteTo.File(formatter: new CustomTextFormatter(), "SmartParkingAppLogs.log").
+                WriteTo.File(logPath).
                 CreateLogger();
-            db.LoadData();
+            LoadData();
         }
-
 
 
 
@@ -31,7 +49,7 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public ParkingSession GetActiveSessionForUser(int userId)
         {
-            ParkingSession ret = db.ActiveSessions.Find(ps => ps.UserId == userId);
+            ParkingSession ret = activeSessions.Find(ps => ps.UserId == userId);
             return ret;
         }
 
@@ -45,7 +63,7 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public IEnumerable<ParkingSession> GetSessionsInPeriod(int userId, DateTime since, DateTime until)
         {
-            User usr = db.Users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
+            User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
             if (usr == null)
                 return null;
             if (usr.UserRole != UserRole.Owner)
@@ -53,11 +71,11 @@ namespace SmartParkingApp.ClassLibrary
 
             List<ParkingSession> ret = new List<ParkingSession>();
 
-            IEnumerable<ParkingSession> past = from tmp in db.PastSessions
+            IEnumerable<ParkingSession> past = from tmp in pastSessions
                                                where (tmp.EntryDt >= since) && (tmp.ExitDt <= until)
                                                select tmp;
             ret.AddRange(past);
-            IEnumerable<ParkingSession> act = from tmp in db.ActiveSessions
+            IEnumerable<ParkingSession> act = from tmp in activeSessions
                                               where (tmp.EntryDt >= since)
                                               select tmp;
 
@@ -87,17 +105,17 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public IEnumerable<ParkingSession> GetPayedSessionsInPeriod(int userId, DateTime since, DateTime until)
         {
-            User usr = db.Users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
+            User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
             if (usr == null)
                 return null;
             if (usr.UserRole != UserRole.Owner)
                 return null;
 
-            List<ParkingSession> ret = (from tmp in db.PastSessions
+            List<ParkingSession> ret = (from tmp in pastSessions
                                               where
                      (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until)
                                               select tmp).ToList();
-            IEnumerable<ParkingSession> active = from tmp in db.ActiveSessions
+            IEnumerable<ParkingSession> active = from tmp in activeSessions
                                                   where (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until) &&
                                                   (tmp.PaymentDt != null) select tmp;
 
@@ -114,11 +132,11 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public IEnumerable<ParkingSession> GetActiveSesstionsForOwner(int userId)
         {
-            bool isOwner = db.Users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
+            bool isOwner = users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
 
             if (isOwner)
             {
-                return db.ActiveSessions;
+                return activeSessions;
             }
             else
             {
@@ -133,11 +151,11 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public IEnumerable<ParkingSession> GetPastSesstionsForOwner(int userId)
         {
-            bool isOwner = db.Users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
+            bool isOwner = users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
 
             if (isOwner)
             {
-                return db.PastSessions;
+                return pastSessions;
             }
             else
             {
@@ -154,7 +172,7 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public double GetPercentageofOccupiedSpace(int userId)
         {
-            User usr = db.Users.Find(u => u.Id == userId);
+            User usr = users.Find(u => u.Id == userId);
             
             if (usr == null)
             {
@@ -167,8 +185,8 @@ namespace SmartParkingApp.ClassLibrary
             }
 
 
-            double taken = db.ActiveSessions.Count;
-            double rate = taken / db.ParkingCapacity;
+            double taken = activeSessions.Count;
+            double rate = taken / parkingCapacity;
             return rate * 100.0d;
         }
 
@@ -178,7 +196,7 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public List<Tariff> GetTariffs()
         {
-            return db.TariffTable;
+            return tariffTable;
         }
 
 
@@ -187,11 +205,11 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public IEnumerable<ParkingSession> GetCompletedSessionsForUser(int userId)
         {
-            // Select from db.PastSessions list only those sessions that are ralative to
+            // Select from pastSessions list only those sessions that are ralative to
             // user with specified ID
             // If query won't succeed then ret will not be null
 
-            IEnumerable<ParkingSession> ret = from tmp in db.PastSessions
+            IEnumerable<ParkingSession> ret = from tmp in pastSessions
                                               where tmp.UserId == userId
                                               select tmp;
             return ret;
@@ -204,7 +222,7 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public User GetUserById(int userId)
         {
-            User ret = db.Users.Find(u => u.Id == userId);
+            User ret = users.Find(u => u.Id == userId);
             return ret;
         }
 
@@ -213,15 +231,15 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public string RegisterNewUser(User usr)
         {
-            if (db.Users.Count != 0)
+            if (users.Count != 0)
             {
-                bool alreadyExist = db.Users.Any(u => u.Name == usr.Name);
+                bool alreadyExist = users.Any(u => u.Name == usr.Name);
                 if (alreadyExist)
                 {
                     return "User with this name already exists";
                 }
 
-                int maxUserId = db.Users.Max(u => u.Id);
+                int maxUserId = users.Max(u => u.Id);
                 usr.Id = maxUserId + 1;
             }
             else
@@ -229,9 +247,9 @@ namespace SmartParkingApp.ClassLibrary
                 usr.Id = 1;
             }
             Log.Information("New User Registered {UserName} {UserId}", usr.Name, usr.Id);
-            // Add user to db.Users collection
-            db.Users.Add(usr);
-            db.Serialize(db.DataPath + Path.DirectorySeparatorChar + "Users.json", db.Users);
+            // Add user to users collection
+            users.Add(usr);
+            Serialize(DataPath + "\\Users.json", users);
             return "Successfully";
         }
 
@@ -241,13 +259,13 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public string Login(User usr)
         {
-            User found = db.Users.Find(u => u.Name == usr.Name);
+            User found = users.Find(u => u.Name == usr.Name);
 
 
             // Authorize via phone nubmer
             if (found == null)
             {
-                found = db.Users.Find(u => u.Phone == usr.Name);
+                found = users.Find(u => u.Phone == usr.Name);
             }
 
             if (found == null)
@@ -278,7 +296,7 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public List<ParkingSession> GetPastSessionsForUser(int userId)
         {
-            List<ParkingSession> ret = (from tmp in db.PastSessions
+            List<ParkingSession> ret = (from tmp in pastSessions
                                         where tmp.UserId == userId
                                         select tmp).ToList();
             return ret;
@@ -286,20 +304,20 @@ namespace SmartParkingApp.ClassLibrary
 
         public ParkingSession EnterParking(string carPlateNumber)
         {
-            if (db.ActiveSessions.Count >= db.ParkingCapacity || db.ActiveSessions.Any(s => s.CarPlateNumber == carPlateNumber))
+            if (activeSessions.Count >= parkingCapacity || activeSessions.Any(s => s.CarPlateNumber == carPlateNumber))
                 return null;
 
             var session = new ParkingSession
             {
                 CarPlateNumber = carPlateNumber,
                 EntryDt = DateTime.Now,
-                TicketNumber = db.NextTicketNumber++,
-                User = db.Users.FirstOrDefault(u => u.CarPlateNumber == carPlateNumber)
+                TicketNumber = nextTicketNumber++,
+                User = users.FirstOrDefault(u => u.CarPlateNumber == carPlateNumber)
             };
             session.UserId = session.User?.Id;
 
-            db.ActiveSessions.Add(session);
-            db.SaveData();
+            activeSessions.Add(session);
+            SaveData();
 
             Log.Information("New parking session started {CarPlateNumber}", carPlateNumber);
             return session;
@@ -314,7 +332,7 @@ namespace SmartParkingApp.ClassLibrary
             DateTime currentDt = DateTime.Now;  // Getting the current datetime only once
 
             double diff = (currentDt - (session.PaymentDt ?? session.EntryDt)).TotalMinutes;
-            if (diff <= db.FreeLeavePeriod)
+            if (diff <= freeLeavePeriod)
             {
                 session.TotalPayment = 0;
                 CompleteSession(session, currentDt);
@@ -346,12 +364,12 @@ namespace SmartParkingApp.ClassLibrary
             ParkingSession session = GetSessionByTicketNumber(ticketNumber);
             session.TotalPayment = (session.TotalPayment ?? 0) + amount;
             session.PaymentDt = DateTime.Now;
-            db.SaveData();
+            SaveData();
         }
 
         public bool TryLeaveParkingByCarPlateNumber(string carPlateNumber, ParkingSession session)
         {
-            session = db.ActiveSessions.FirstOrDefault(s => s.CarPlateNumber == carPlateNumber);
+            session = activeSessions.FirstOrDefault(s => s.CarPlateNumber == carPlateNumber);
             if (session == null)
                 return false;
 
@@ -359,7 +377,7 @@ namespace SmartParkingApp.ClassLibrary
 
             if (session.PaymentDt != null)
             {
-                if ((currentDt - session.PaymentDt.Value).TotalMinutes <= db.FreeLeavePeriod)
+                if ((currentDt - session.PaymentDt.Value).TotalMinutes <= freeLeavePeriod)
                 {
                     CompleteSession(session, currentDt);
                     Log.Information("Parking session completed successfully {SessionEntryDate} {SessionExitDate} {TotalPayment}", 
@@ -375,7 +393,7 @@ namespace SmartParkingApp.ClassLibrary
             else
             {
                 // No payment, within free leave period -> allow exit
-                if ((currentDt - session.EntryDt).TotalMinutes <= db.FreeLeavePeriod)
+                if ((currentDt - session.EntryDt).TotalMinutes <= freeLeavePeriod)
                 {
                     session.TotalPayment = 0;
                     Log.Information("Parking session completed successfully {SessionEntryDate} {SessionExitDate}",
@@ -394,7 +412,7 @@ namespace SmartParkingApp.ClassLibrary
                     }
                     else
                     {
-                        session.TotalPayment = GetCost((currentDt - session.EntryDt).TotalMinutes - db.FreeLeavePeriod);
+                        session.TotalPayment = GetCost((currentDt - session.EntryDt).TotalMinutes - freeLeavePeriod);
                         session.PaymentDt = currentDt;
                         CompleteSession(session, currentDt);
                         return true;
@@ -405,33 +423,100 @@ namespace SmartParkingApp.ClassLibrary
 
 
 
-        private void CompleteSession(ParkingSession session, DateTime currentDt)
+
+        #region Helper methods
+        private ParkingSession GetSessionByTicketNumber(int ticketNumber)
         {
-            session.ExitDt = currentDt;
-            db.ActiveSessions.Remove(session);
-            db.PastSessions.Add(session);
-            db.SaveData();
+            var session = activeSessions.FirstOrDefault(s => s.TicketNumber == ticketNumber);
+            if (session == null)
+                throw new ArgumentException($"Session with ticket number = {ticketNumber} does not exist");
+            return session;
         }
 
         private decimal GetCost(double diffInMinutes)
         {
-            var tariff = db.TariffTable.FirstOrDefault(t => t.Minutes >= diffInMinutes) ?? db.TariffTable.Last();
+            var tariff = tariffTable.FirstOrDefault(t => t.Minutes >= diffInMinutes) ?? tariffTable.Last();
             return tariff.Rate;
         }
 
-
-        private ParkingSession GetSessionByTicketNumber(int ticketNumber)
+        private T Deserialize<T>(string fileName)
         {
-            var session = db.ActiveSessions.FirstOrDefault(s => s.TicketNumber == ticketNumber);
-            if (session == null)
+            using (var sr = new StreamReader(fileName))
             {
-                Exception e = new ArgumentException($"Session with ticket number = {ticketNumber} does not exist");
-                Log.Error("Error while creating user {Error} {Stacktrace} {InnerException} {Source}",
-                    e.Message, e.StackTrace, e.InnerException, e.Source);
-                throw e;
+                using (var jsonReader = new JsonTextReader(sr))
+                {
+                    var serializer = new JsonSerializer();
+                    return serializer.Deserialize<T>(jsonReader);
+                }
             }
-            return session;
         }
 
+        private void Serialize<T>(string fileName, T data)
+        {
+            using (StreamWriter sw = new StreamWriter(fileName))
+            {
+                using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
+                    serializer.Serialize(jsonWriter, data);
+                }
+            }
+        }
+
+        private class ParkingData
+        {
+            public List<ParkingSession> PastSessions { get; set; }
+            public List<ParkingSession> ActiveSessions { get; set; }
+            public int Capacity { get; set; }
+        }
+
+
+        private void LoadData()
+        {
+            tariffTable = Deserialize<List<Tariff>>(DataPath + "\\Tariffs.json") ?? new List<Tariff>();
+            ParkingData data = Deserialize<ParkingData>(DataPath + "\\ParkingData.json");
+            users = Deserialize<List<User>>(DataPath + "\\Users.json") ?? new List<User>();
+
+            if (data != null)
+            {
+                parkingCapacity = data.Capacity;
+                pastSessions = (data.PastSessions == null) ? new List<ParkingSession>() : data.PastSessions;
+                activeSessions = (data.ActiveSessions == null) ? new List<ParkingSession>() : data.ActiveSessions;
+            }
+            else
+            {
+                parkingCapacity = 0;
+                pastSessions = new List<ParkingSession>();
+                activeSessions = new List<ParkingSession>();
+            }
+            if (tariffTable.Count != 0)
+                freeLeavePeriod = tariffTable.First().Minutes;
+            else
+                freeLeavePeriod = 0;
+
+            nextTicketNumber = activeSessions.Count > 0 ? activeSessions.Max(s => s.TicketNumber) + 1 : 1;
+        }
+
+        private void SaveData()
+        {
+            ParkingData data = new ParkingData
+            {
+                Capacity = parkingCapacity,
+                ActiveSessions = activeSessions,
+                PastSessions = pastSessions
+            };
+
+            Serialize(DataPath + "\\ParkingData.json", data);
+        }
+
+        private void CompleteSession(ParkingSession session, DateTime currentDt)
+        {
+            session.ExitDt = currentDt;
+            activeSessions.Remove(session);
+            pastSessions.Add(session);
+            SaveData();
+        }
+        #endregion
     }
 }

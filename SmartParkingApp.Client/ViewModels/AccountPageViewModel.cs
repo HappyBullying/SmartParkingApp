@@ -1,18 +1,13 @@
 ﻿using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
+using SmartParkingApp.Client.Commands;
 using System;
-using Prism.Mvvm;
-using Prism.Commands;
-using Prism.Regions;
-using Prism.Ioc;
-using System.Windows.Input;
+using System.ComponentModel;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class AccountPageViewModel : BindableBase
+    class AccountPageViewModel : INotifyPropertyChanged
     {
-        private readonly IRegionManager regionManager;
-
         // Properties for DataBinding
         /************************************************************************************/
         // Property for Name
@@ -22,7 +17,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _Name = value;
-                SetProperty(ref _Name, value, "Name");
+                OnPropertyChanged("Name");
             }
         }
         private string _Name;
@@ -36,7 +31,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _CarPlateNumber = value;
-                SetProperty(ref _CarPlateNumber, value, "CarPlateNumber");
+                OnPropertyChanged("CarPlateNumber");
             }
         }
         private string _CarPlateNumber;
@@ -51,7 +46,7 @@ namespace SmartParkingApp.Client.ViewModels
             private set
             {
                 _Phone = value;
-                SetProperty(ref _Phone, value, "Phone");
+                OnPropertyChanged("Phone");
             }
         }
         private string _Phone;
@@ -59,17 +54,7 @@ namespace SmartParkingApp.Client.ViewModels
 
 
         // LogOut Command
-        public ICommand LogOutCommand { get; set; }
-        public bool CanExecuteLogOut()
-        {
-            return true;
-        }
-
-        private void LogOut()
-        {
-            regionManager.RequestNavigate("ContentRegion", "LoginPage");
-        }
-
+        public AccountCommand LogOutCommand { get; set; }
         /************************************************************************************/
 
 
@@ -78,14 +63,19 @@ namespace SmartParkingApp.Client.ViewModels
 
 
         private ParkingManager _pk;
-        public AccountPageViewModel(IRegionManager rM)
+        public AccountPageViewModel(int userId, Action logout, ParkingManager pk)
         {
-            _pk = StaticVars.manager;
-            LogOutCommand = new DelegateCommand(LogOut, CanExecuteLogOut);
-            User usr = _pk.GetUserById(StaticVars.TransferID);
+            _pk = pk;
+            LogOutCommand = new AccountCommand(logout);
+            User usr = _pk.GetUserById(userId);
             Name = usr.Name;
             CarPlateNumber = usr.CarPlateNumber;
             Phone = usr.Phone;
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string propName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }

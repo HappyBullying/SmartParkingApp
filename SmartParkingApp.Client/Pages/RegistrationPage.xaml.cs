@@ -1,4 +1,6 @@
-﻿using SmartParkingApp.Client.ViewModels;
+﻿using SmartParkingApp.ClassLibrary;
+using SmartParkingApp.Client.ViewModels;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Windows.Controls;
@@ -8,9 +10,13 @@ namespace SmartParkingApp.Client.Pages
 {
     public partial class RegistrationPage : Page
     {
-        public RegistrationPage()
+        public RegistrationPage(ParkingManager pkm, Action navigateToLogin)
         {
             InitializeComponent();
+
+            // ViewModel class
+            RegisterViewModel viewModelReg = new RegisterViewModel(UserRole.Client, pkm, navigateToLogin);
+            DataContext = viewModelReg;
 
             // Load image from resources
             Assembly asm = GetType().GetTypeInfo().Assembly;
@@ -27,7 +33,7 @@ namespace SmartParkingApp.Client.Pages
             // PasswordBox Password property does not support binding
             passwdBox.PasswordChanged += (s, e) =>
             {
-                (DataContext as RegistrationPageViewModel).Password = passwdBox.Password;
+                viewModelReg.Password = passwdBox.Password;
             };
         }
 

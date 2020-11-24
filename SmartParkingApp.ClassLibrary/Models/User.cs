@@ -1,8 +1,5 @@
 ﻿namespace SmartParkingApp.ClassLibrary.Models
 {
-    /// <summary>
-    /// Represents parking client
-    /// </summary>
     public class User
     {
         public int Id { get; set; }

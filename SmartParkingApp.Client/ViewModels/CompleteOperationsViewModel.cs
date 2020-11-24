@@ -1,14 +1,12 @@
-﻿using Prism.Ioc;
-using Prism.Mvvm;
-using Prism.Regions;
-using SmartParkingApp.ClassLibrary;
+﻿using SmartParkingApp.ClassLibrary;
 using SmartParkingApp.ClassLibrary.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace SmartParkingApp.Client.ViewModels
 {
-    class CompleteOperationsViewModel : BindableBase
+    class CompleteOperationsViewModel : INotifyPropertyChanged
     {
         // Properties for DataBinding
         /************************************************************************************/
@@ -16,13 +14,24 @@ namespace SmartParkingApp.Client.ViewModels
         /************************************************************************************/
 
 
+
+
+
         private ParkingManager _pk;
-        public CompleteOperationsViewModel(IRegionManager rM)
+        public CompleteOperationsViewModel(int userId, ParkingManager pk)
         {
-            _pk = StaticVars.manager;
-            IEnumerable<ParkingSession> received = _pk.GetCompletedSessionsForUser(StaticVars.TransferID);
+            _pk = pk;
+            IEnumerable<ParkingSession> received = _pk.GetCompletedSessionsForUser(userId);
             Sessions = new ObservableCollection<ParkingSession>(received);
             
+        }
+
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string propName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }
