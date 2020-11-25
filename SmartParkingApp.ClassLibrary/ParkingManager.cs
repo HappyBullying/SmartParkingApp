@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Serilog;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace SmartParkingApp.ClassLibrary
 {
     public class ParkingManager
     {
+        private string rootUrl = "";
+        private HttpClient client;
         private List<ParkingSession> pastSessions;
         private List<ParkingSession> activeSessions;
         private List<Tariff> tariffTable;
@@ -40,6 +43,14 @@ namespace SmartParkingApp.ClassLibrary
                 WriteTo.File(logPath).
                 CreateLogger();
             LoadData();
+            client = new HttpClient();
+        }
+
+
+        private void CheckJwt()
+        {
+            client.DefaultRequestHeaders.Authorization = new
+                 System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "");
         }
 
 
@@ -47,10 +58,14 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns Active session for user if he closed the application and didn't payed
         /// </summary>
-        public ParkingSession GetActiveSessionForUser(int userId)
+        public async Task<ParkingSession> GetActiveSessionForUser(int userId)
         {
-            ParkingSession ret = activeSessions.Find(ps => ps.UserId == userId);
-            return ret;
+            CheckJwt();
+            UriBuilder uB = new UriBuilder(rootUrl + "/parking/getactivesessionforuser");
+            uB.Query = "userId=" + userId;
+            HttpResponseMessage content = await client.GetAsync(uB.Uri);
+            string resultString = await content.Content.ReadAsStringAsync();
+            return (ParkingSession)JsonConvert.DeserializeObject<ResponseModel>(resultString).Data;
         }
 
 
@@ -63,6 +78,18 @@ namespace SmartParkingApp.ClassLibrary
         /// </summary>
         public IEnumerable<ParkingSession> GetSessionsInPeriod(int userId, DateTime since, DateTime until)
         {
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/parking/getsessionsinperiod");
+            using (var content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+            {
+                new KeyValuePair<string, string>("userId", userId.ToString()),
+                new KeyValuePair<string, string>("since", since.ToString()),
+                new KeyValuePair<string, string>("until")
+
+            }))
+            {
+
+            }
             User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
             if (usr == null)
                 return null;
