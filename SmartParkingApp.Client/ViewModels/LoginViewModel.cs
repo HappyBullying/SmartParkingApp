@@ -3,8 +3,6 @@ using SmartParkingApp.ClassLibrary.Models;
 using SmartParkingApp.Client.Commands;
 using System;
 using System.ComponentModel;
-using System.Security.Cryptography;
-using System.Text;
 using System.Windows.Media;
 
 namespace SmartParkingApp.Client.ViewModels
@@ -137,8 +135,8 @@ namespace SmartParkingApp.Client.ViewModels
 
         private readonly string _userRole;
         private ParkingManager _pkManager;
-        private Action<int> _navToMenue;
-        public LoginViewModel(string userRole, ParkingManager pkm, Action<int> navToMenue, Action navToRegister)
+        private Action _navToMenue;
+        public LoginViewModel(string userRole, ParkingManager pkm, Action navToMenue, Action navToRegister)
         {
             _userRole = userRole;
             _pkManager = pkm;
@@ -147,41 +145,27 @@ namespace SmartParkingApp.Client.ViewModels
             _navToMenue = navToMenue;
         }
 
-        private void Login()
+        private async void Login()
         {
-            // Compute MD5 hash for password
-            MD5 md5 = MD5.Create();
-            byte[] input = Encoding.ASCII.GetBytes(Password);
-            byte[] hash = md5.ComputeHash(input);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hash.Length; i++)
-            {
-                // Add letter into full hash string uppercase
-                sb.Append(hash[i].ToString("X2"));
-            }
-
             // Create new user object
             User usr = new User
             {
-                Name = UserName,
-                PasswordHash = sb.ToString(),
-                UserRole = _userRole
+                Username = UserName,
+                Password = Password
             };
 
 
             // Try to add user to the json database
-            string result = _pkManager.Login(usr);
-
-            int userId;
+            ResponseModel response = await _pkManager.Login(usr);
             
-            if (!int.TryParse(result, out userId))
+            if (!response.Succeded)
             {
-                IssueWindow iss = new IssueWindow(result);
+                IssueWindow iss = new IssueWindow(response.Message);
                 iss.ShowDialog();
             }
             else
             {
-                _navToMenue?.Invoke(userId);
+                _navToMenue?.Invoke();
             }
         }
 

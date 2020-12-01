@@ -10,12 +10,11 @@ namespace SmartParkingApp.Owner.Pages
         private Action _logoutAct;
         private ParkingManager _pk;
 
-        public OwnerMenuePage(int userId, Action logoutAct, ParkingManager pk)
+        public OwnerMenuePage(Action logoutAct, ParkingManager pk)
         {
             InitializeComponent();
             _pk = pk;
             _logoutAct = logoutAct;
-            _userId = userId;
             ContentFrame.Content = new AllOperationsPage(_userId, _pk);
         }
 

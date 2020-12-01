@@ -55,12 +55,13 @@ namespace SmartParkingApp.Owner.ViewModels
         }
 
 
-        private void Calculate()
+        private async void Calculate()
         {
             if ((Until - Since).TotalMilliseconds < 0)
                 return;
 
-            IEnumerable<ParkingSession> result = _pk.GetPayedSessionsInPeriod(_userId, Since, Until);
+            ResponseModel response = await _pk.GetPayedSessionsInPeriod(_userId, Since, Until);
+            IEnumerable<ParkingSession> result = (IEnumerable<ParkingSession>)response.Data;
             
             
             decimal? count = 0;

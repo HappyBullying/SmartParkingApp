@@ -1,4 +1,5 @@
 ﻿using SmartParkingApp.ClassLibrary;
+using SmartParkingApp.ClassLibrary.Models;
 using SmartParkingApp.Owner.Commands;
 using System;
 using System.ComponentModel;
@@ -38,9 +39,10 @@ namespace SmartParkingApp.Owner.ViewModels
         }
 
 
-        private void RefreshPercentMethod()
+        private async void RefreshPercentMethod()
         {
-            Percent = _pk.GetPercentageofOccupiedSpace(_userId);
+            ResponseModel response = await _pk.GetPercentageofOccupiedSpace(_userId);
+            Percent = (double)response.Data;
         }
 
 

@@ -45,16 +45,16 @@ namespace SmartParkingApp.Owner.ViewModels
 
 
         // Color for border relative to CarPlateNumber field
-        public Color CarPlateNumberColor
+        public Color SecretColor
         {
-            get { return _carPlateNumberColor; }
+            get { return _secretColor; }
             private set
             {
-                _carPlateNumberColor = value;
-                OnPropertyChanged("CarPlateNumber");
+                _secretColor = value;
+                OnPropertyChanged("Secret");
             }
         }
-        private Color _carPlateNumberColor = Colors.Chocolate;
+        private Color _secretColor = Colors.Chocolate;
 
 
 
@@ -70,6 +70,7 @@ namespace SmartParkingApp.Owner.ViewModels
         }
         private Color _phoneNumberColor = Colors.Chocolate;
 
+        
 
 
         // Property for button enable
@@ -136,27 +137,27 @@ namespace SmartParkingApp.Owner.ViewModels
 
 
         // Property for CarPlateNumber
-        public string CarPlateNumber
+        public string Secret
         {
-            get { return _carPlateNumber; }
+            get { return _secret; }
             set
             {
-                _carPlateNumber = value;
+                _secret = value;
                 OnPropertyChanged("CarPlateNumber");
                 if (value.Length == 0)
                 {
-                    _carPlateNumberColor = Colors.Red;
+                    _secretColor = Colors.Red;
                     _carPlateNumberReady = false;
                 }
                 else
                 {
-                    _carPlateNumberColor = Colors.Chocolate;
+                    _secretColor = Colors.Chocolate;
                     _carPlateNumberReady = true;
                 }
                 EnableRegisterButton();
             }
         }
-        private string _carPlateNumber = "CarPlateNumber";
+        private string _secret = "CarPlateNumber";
 
 
 
@@ -228,7 +229,7 @@ namespace SmartParkingApp.Owner.ViewModels
         }
 
 
-        private void Register()
+        private async void Register()
         {
             // Compute MD5 hash for password
             MD5 md5 = MD5.Create();
@@ -242,26 +243,25 @@ namespace SmartParkingApp.Owner.ViewModels
             }
 
             // Create new user object
-            User usr = new User
+            OwnerRegisterModel usr = new OwnerRegisterModel
             {
-                Name = UserName,
-                PasswordHash = sb.ToString(),
-                CarPlateNumber = CarPlateNumber,
+                Username = UserName,
+                Password = Password,
                 Phone = PhoneNumber,
-                UserRole = _userRole
+                Secret = Secret
             };
 
 
             // Try to add user to the json database
-            string result = _pkManager.RegisterNewUser(usr);
-            if (!result.Equals("Successfully"))
+            ResponseModel response = await _pkManager.RegisterOwner(usr);
+            if (!response.Succeded)
             {
-                IssueWindow iss = new IssueWindow(result);
+                IssueWindow iss = new IssueWindow(response.Message);
                 iss.ShowDialog();
             }
             else
             {
-                if (NavigateToLogin.CanExecute(result))
+                if (NavigateToLogin.CanExecute(null))
                 {
                     NavigateToLogin.Execute(null);
                 }

@@ -67,8 +67,8 @@ namespace SmartParkingApp.Client.ViewModels
         {
             _pk = pk;
             LogOutCommand = new AccountCommand(logout);
-            User usr = _pk.GetUserById(userId);
-            Name = usr.Name;
+            User usr = _pk.CurrentUser;
+            Name = usr.Username;
             CarPlateNumber = usr.CarPlateNumber;
             Phone = usr.Phone;
         }

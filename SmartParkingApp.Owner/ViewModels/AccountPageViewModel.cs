@@ -69,9 +69,8 @@ namespace SmartParkingApp.Owner.ViewModels
             _pk = pk;
             _userId = userId;
             LogOutCommand = new AccountCommand(logout);
-            User usr = _pk.GetUserById(userId);
-            Name = usr.Name;
-            UserRole = usr.UserRole;
+            User usr = _pk.CurrentUser;
+            Name = usr.Username;
             Phone = usr.Phone;
         }
         public event PropertyChangedEventHandler PropertyChanged;

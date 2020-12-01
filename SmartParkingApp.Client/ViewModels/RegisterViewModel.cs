@@ -12,7 +12,7 @@ namespace SmartParkingApp.Client.ViewModels
 {
     class RegisterViewModel : INotifyPropertyChanged
     {
-        
+
         // Properties for DataBinding
         /************************************************************************************/
         // Color for border relative to username field
@@ -184,8 +184,8 @@ namespace SmartParkingApp.Client.ViewModels
             }
         }
         private string _phoneNumber = "PhoneNumber";
-        
-        
+
+
         private bool _nameReady = false;
         private bool _passwordReady = false;
         private bool _carPlateNumberReady = true;
@@ -216,54 +216,38 @@ namespace SmartParkingApp.Client.ViewModels
 
 
 
-        private readonly string _userRole;
         private ParkingManager _pkManager;
         public RegisterViewModel(string userRole, ParkingManager pkm, Action navigateToLogin)
         {
-            _userRole = userRole;
             _pkManager = pkm;
             RegisterUserCommand = new RegisterCommand(Register);
             NavigateToLogin = new RegisterCommand(navigateToLogin);
         }
 
-        
-        private void Register()
-        {
-            // Compute MD5 hash for password
-            MD5 md5 = MD5.Create();
-            byte[] input = Encoding.ASCII.GetBytes(Password);
-            byte[] hash = md5.ComputeHash(input);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hash.Length; i++)
-            {
-                // Add letter into full hash string uppercase
-                sb.Append(hash[i].ToString("X2"));
-            }
 
+        private async void Register()
+        {
             // Create new user object
             User usr = new User
             {
-                Name = UserName,
-                PasswordHash = sb.ToString(),
+                Username = UserName,
                 CarPlateNumber = CarPlateNumber,
                 Phone = PhoneNumber,
-                UserRole = _userRole
+                Password = Password
             };
 
 
             // Try to add user to the json database
-            string result = _pkManager.RegisterNewUser(usr);
-            if (!result.Equals("Successfully"))
+            ResponseModel response = await _pkManager.RegisterUser(usr);
+
+            if (!response.Succeded)
             {
-                IssueWindow iss = new IssueWindow(result);
+                IssueWindow iss = new IssueWindow(response.Message);
                 iss.ShowDialog();
             }
             else
             {
-                if (NavigateToLogin.CanExecute(result))
-                {
-                    NavigateToLogin.Execute(null);
-                }
+                NavigateToLogin.Execute(null);
             }
         }
 

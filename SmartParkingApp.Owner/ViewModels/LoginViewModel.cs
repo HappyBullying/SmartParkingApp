@@ -137,8 +137,8 @@ namespace SmartParkingApp.Owner.ViewModels
 
         private readonly string _userRole;
         private ParkingManager _pkManager;
-        private Action<int> _navToMenue;
-        public LoginViewModel(string userRole, ParkingManager pkm, Action<int> navToMenue, Action navToRegister)
+        private Action _navToMenue;
+        public LoginViewModel(string userRole, ParkingManager pkm, Action navToMenue, Action navToRegister)
         {
             _userRole = userRole;
             _pkManager = pkm;
@@ -147,7 +147,7 @@ namespace SmartParkingApp.Owner.ViewModels
             _navToMenue = navToMenue;
         }
 
-        private void Login()
+        private async void Login()
         {
             // Compute MD5 hash for password
             MD5 md5 = MD5.Create();
@@ -163,25 +163,24 @@ namespace SmartParkingApp.Owner.ViewModels
             // Create new user object
             User usr = new User
             {
-                Name = UserName,
-                PasswordHash = sb.ToString(),
-                UserRole = _userRole
+                Username = UserName,
+                Password = Password
             };
 
 
             // Try to add user to the json database
-            string result = _pkManager.Login(usr);
+            ResponseModel response = await _pkManager.Login(usr);
 
             int userId;
 
-            if (!int.TryParse(result, out userId))
+            if (!response.Succeded)
             {
-                IssueWindow iss = new IssueWindow(result);
+                IssueWindow iss = new IssueWindow(response.Message);
                 iss.ShowDialog();
             }
             else
             {
-                _navToMenue?.Invoke(userId);
+                _navToMenue?.Invoke();
             }
         }
 

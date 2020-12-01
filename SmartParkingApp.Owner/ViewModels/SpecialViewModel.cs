@@ -51,12 +51,12 @@ namespace SmartParkingApp.Owner.ViewModels
 
 
 
-        private void Calculate()
+        private async void Calculate()
         {
             if ((Until - Since).TotalDays <= 0)
                 return;
-
-            List<ParkingSession> sessions = new List<ParkingSession>(_pk.GetSessionsInPeriod(_userId, Since, Until));
+            ResponseModel response = await _pk.GetSessionsInPeriod(_userId, Since, Until);
+            List<ParkingSession> sessions = new List<ParkingSession>((List<ParkingSession>)response.Data);
             TimeSpan ts = Until - Since;
 
 

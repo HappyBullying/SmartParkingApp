@@ -1,0 +1,14 @@
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\SmartParkingApp.ClassLibrary.dll
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\SmartParkingApp.ClassLibrary.pdb
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Newtonsoft.Json.dll
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Serilog.dll
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Serilog.Sinks.File.dll
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Newtonsoft.Json.xml
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Serilog.xml
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Serilog.Sinks.File.pdb
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\bin\Debug\Serilog.Sinks.File.xml
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\obj\Debug\SmartParkingApp.ClassLibrary.csprojAssemblyReference.cache
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\obj\Debug\SmartParkingApp.ClassLibrary.csproj.CoreCompileInputs.cache
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\obj\Debug\SmartParkingApp.ClassLibrary.csproj.CopyComplete
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\obj\Debug\SmartParkingApp.ClassLibrary.dll
+G:\GitRepos\SmartParkingApp\SmartParkingApp.ClassLibrary\obj\Debug\SmartParkingApp.ClassLibrary.pdb

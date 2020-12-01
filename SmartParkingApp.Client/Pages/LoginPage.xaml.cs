@@ -10,7 +10,7 @@ namespace SmartParkingApp.Client.Pages
 {
     public partial class LoginPage : Page
     {
-        public LoginPage(ParkingManager pkm, Action<int> navigateToMenue, Action navigateToRegister)
+        public LoginPage(ParkingManager pkm, Action navigateToMenue, Action navigateToRegister)
         {
             InitializeComponent();
 

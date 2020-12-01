@@ -117,7 +117,7 @@
                     Width="320"
                     Height="3">
                     <Border.Background>
-                        <SolidColorBrush Color="{Binding CarPlateNumberColor, Mode=OneWay}"></SolidColorBrush>
+                        <SolidColorBrush Color="{Binding SecretColor, Mode=OneWay}"></SolidColorBrush>
                     </Border.Background>
                 </Border>
 

@@ -17,14 +17,14 @@ namespace SmartParkingApp.Owner
         private Action navigateToRegister;
         private Action navigateToLogin;
         private Action logoutAction;
-        private Action<int> navigateToMenue;
+        private Action navigateToMenue;
 
         public MainWindow()
         {
             InitializeComponent();
             DataPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\SmartParkingApp\\Data";
             PrepareFiles();
-            _pkManager = new ParkingManager(DataPath);
+            _pkManager = new ParkingManager();
 
             // Disable navigation bar in frame
             main_frame.NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden;
@@ -32,7 +32,7 @@ namespace SmartParkingApp.Owner
 
             navigateToLogin = new Action(NavigateToLogin);
             navigateToRegister = new Action(NavigateToRegister);
-            navigateToMenue = new Action<int>(userId => NavigateToMenue(userId));
+            navigateToMenue = new Action(NavigateToMenue);
             logoutAction = new Action(NavigateToLogin);
 
             main_frame.Content = new LoginPage(_pkManager, navigateToMenue, navigateToRegister);
@@ -53,9 +53,9 @@ namespace SmartParkingApp.Owner
 
 
         // Navigates to Menue Page
-        private void NavigateToMenue(int userId)
+        private void NavigateToMenue()
         {
-            main_frame.Content = new OwnerMenuePage(userId, logoutAction, _pkManager);
+            main_frame.Content = new OwnerMenuePage(logoutAction, _pkManager);
         }
 
         // Prepares json files

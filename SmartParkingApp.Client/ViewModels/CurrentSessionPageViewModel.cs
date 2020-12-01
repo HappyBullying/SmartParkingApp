@@ -134,7 +134,7 @@ namespace SmartParkingApp.Client.ViewModels
         public CurrentSessionPageViewModel(int UserId, ParkingManager pkm)
         {
             _pk = pkm;
-            _User = _pk.GetUserById(UserId);
+            _User = _pk.CurrentUser;
 
             issueWindow = new IssueWindow("");
             EnterCommand = new CurSesCommand(new Action(StartParking));
@@ -153,9 +153,10 @@ namespace SmartParkingApp.Client.ViewModels
         // application it is necessary to download data from the 
         // active sessionif the user has closed the application it is 
         // necessary to download data from the active session
-        private void LoadActiveIfExists()
+        private async void LoadActiveIfExists()
         {
-            _currentSession = _pk.GetActiveSessionForUser(_User.Id);
+            ResponseModel response1 = await _pk.GetActiveSessionForUser();
+            _currentSession = (ParkingSession)response1.Data;
             
             if (_currentSession != null)
             {
@@ -164,20 +165,19 @@ namespace SmartParkingApp.Client.ViewModels
                 EntryDate = _currentSession.EntryDt;
                 PayEnabled = true;
                 RenewEnabled = true;
-                Cost = _pk.GetRemainingCost(_currentSession.TicketNumber);
+                ResponseModel response2 = await _pk.GetRemainingCost(_currentSession.TicketNumber);
+                Cost = (decimal)response2.Data;
             }
         }
 
 
-        private void StartParking()
+        private async void StartParking()
         {
-            _currentSession = _pk.EnterParking(_User.CarPlateNumber);
-
+            ResponseModel response = await _pk.EnterParking();
+            _currentSession = (ParkingSession)response.Data;
 
             CarPlateNumber = _currentSession.CarPlateNumber;
             EntryDate = _currentSession.EntryDt;
-
-
 
             EnterEnabled = false;
             PayEnabled = true;
@@ -185,17 +185,19 @@ namespace SmartParkingApp.Client.ViewModels
         }
 
 
-        private void TryToLeave()
+        private async void TryToLeave()
         {
-            bool leaveResult; 
-
+            bool leaveResult;
+            ResponseModel response;
             if (_payed)
             {
-                leaveResult = _pk.TryLeaveParkingWithTicket(_currentSession.TicketNumber, _currentSession);
+                response = await _pk.TryLeaveParking(_currentSession.TicketNumber, _currentSession);
+                leaveResult = response.Succeded;
             }
             else
             {
-                leaveResult = _pk.TryLeaveParkingByCarPlateNumber(CarPlateNumber, _currentSession);
+                response = await _pk.TryLeaveParkingByCarPlateNumber(CarPlateNumber, _currentSession);
+                leaveResult = response.Succeded;
             }
 
             if (leaveResult)
@@ -222,17 +224,17 @@ namespace SmartParkingApp.Client.ViewModels
         }
 
 
-        private void Pay()
+        private async void Pay()
         {
-            decimal amount = _pk.GetRemainingCost(_currentSession.TicketNumber);
-            _pk.PayForParking(_currentSession.TicketNumber, amount);
+            ResponseModel response = await _pk.PayForParking(_currentSession.TicketNumber, CarPlateNumber);
             _payed = true;
             LeaveEnabled = true;
         }
 
-        private void RenewCost()
+        private async void RenewCost()
         {
-            Cost = _pk.GetRemainingCost(_currentSession.TicketNumber);
+            ResponseModel response = await _pk.GetRemainingCost(_currentSession.TicketNumber);
+            Cost = Convert.ToDecimal(response.Data);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

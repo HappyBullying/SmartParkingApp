@@ -51,8 +51,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Logging\CustomTextFormatter.cs" />
+    <Compile Include="Models\AuthResultModel.cs" />
+    <Compile Include="Models\OwnerRegisterModel.cs" />
     <Compile Include="Models\ParkingSession.cs" />
+    <Compile Include="Models\ResponseResult.cs" />
     <Compile Include="Models\Tariff.cs" />
+    <Compile Include="Models\TokenResponseModel.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="ParkingManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

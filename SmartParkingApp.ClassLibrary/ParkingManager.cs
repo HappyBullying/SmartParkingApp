@@ -1,56 +1,66 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SmartParkingApp.ClassLibrary.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
+using System.Security;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SmartParkingApp.ClassLibrary
 {
     public class ParkingManager
     {
-        private string rootUrl = "";
+        private string rootUrl = "http://localhost:5000";
         private HttpClient client;
-        private List<ParkingSession> pastSessions;
-        private List<ParkingSession> activeSessions;
-        private List<Tariff> tariffTable;
-        private List<User> users;
-
-        private int parkingCapacity;
-        private int freeLeavePeriod;
-        private int nextTicketNumber;
-        private readonly string DataPath;
+        private SecureString refreshToken;
+        private DateTime? expirationTime;
+        public User CurrentUser { get; set; }
 
 
-
-
-        public ParkingManager(string dataPath)
+        public ParkingManager()
         {
-            DataPath = dataPath;
-
-            // Create logger which logs into a specific file
-            string logPath = Path.Combine(dataPath, "Logs");
-
-            if (!Directory.Exists(logPath))
-            {
-                Directory.CreateDirectory(logPath);
-            }
-            logPath = Path.Combine(logPath, "logs_" + DateTime.Now.Date.ToString() + ".txt");
-            Log.Logger = new LoggerConfiguration().
-                MinimumLevel.Debug().
-                WriteTo.File(logPath).
-                CreateLogger();
-            LoadData();
             client = new HttpClient();
+            client.DefaultRequestHeaders
+                .Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            refreshToken = new SecureString();
         }
 
 
-        private void CheckJwt()
+        private async void CheckJwt()
         {
-            client.DefaultRequestHeaders.Authorization = new
-                 System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "");
+            if (!(expirationTime != null && expirationTime.Value >= DateTime.UtcNow.AddSeconds(25)))
+            {
+                // Refresh
+                UriBuilder ub = new UriBuilder(rootUrl + "/api/account/refreshtoken");
+
+                StringBuilder sb = new StringBuilder();
+                IntPtr valuePtr = Marshal.SecureStringToGlobalAllocUnicode(refreshToken);
+                for (int i = 0; i < refreshToken.Length; i++)
+                {
+                    short unicodeChar = Marshal.ReadInt16(valuePtr, i * 2);
+                    sb.Append((char)unicodeChar);
+                }
+
+                string json = JsonConvert.SerializeObject(new { RefreshToken = sb.ToString() });
+                var data = new StringContent(json, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+                string resultString = await response.Content.ReadAsStringAsync();
+                ResponseModel responseResult = JsonConvert.DeserializeObject<ResponseModel>(resultString);
+                JObject jOData = (JObject)responseResult.Data;
+                AuthResultModel authResult = jOData.ToObject<AuthResultModel>();
+
+                refreshToken.Clear();
+                for (int i = 0; i < authResult.refresh_token.Length; i++)
+                {
+                    refreshToken.AppendChar(authResult.refresh_token[i]);
+                }
+                expirationTime = authResult.expiration.AddHours(3);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.acces_token);
+            }
         }
 
 
@@ -58,14 +68,14 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns Active session for user if he closed the application and didn't payed
         /// </summary>
-        public async Task<ParkingSession> GetActiveSessionForUser(int userId)
+        public async Task<ResponseModel> GetActiveSessionForUser()
         {
             CheckJwt();
-            UriBuilder uB = new UriBuilder(rootUrl + "/parking/getactivesessionforuser");
-            uB.Query = "userId=" + userId;
-            HttpResponseMessage content = await client.GetAsync(uB.Uri);
-            string resultString = await content.Content.ReadAsStringAsync();
-            return (ParkingSession)JsonConvert.DeserializeObject<ResponseModel>(resultString).Data;
+            UriBuilder uB = new UriBuilder(rootUrl + "/api/parking/getactivesessionforuser");
+            uB.Query = "username=" + CurrentUser.Username;
+            HttpResponseMessage response = await client.GetAsync(uB.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
@@ -76,52 +86,23 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns all parking session that are inside time interval
         /// </summary>
-        public IEnumerable<ParkingSession> GetSessionsInPeriod(int userId, DateTime since, DateTime until)
+        public async Task<ResponseModel> GetSessionsInPeriod(int userId, DateTime since, DateTime until)
         {
+            // IEnumerable<ParkingSession>
             CheckJwt();
-            UriBuilder ub = new UriBuilder(rootUrl + "/parking/getsessionsinperiod");
-            using (var content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getsessionsinperiod");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                new KeyValuePair<string, string>("userId", userId.ToString()),
-                new KeyValuePair<string, string>("since", since.ToString()),
-                new KeyValuePair<string, string>("until")
-
+                {"userId", userId.ToString() },
+                {"since", since.ToString() },
+                {"until", until.ToString() }
             }))
             {
-
+                ub.Query = await content.ReadAsStringAsync();
             }
-            User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
-            if (usr == null)
-                return null;
-            if (usr.UserRole != UserRole.Owner)
-                return null;
-
-            List<ParkingSession> ret = new List<ParkingSession>();
-
-            IEnumerable<ParkingSession> past = from tmp in pastSessions
-                                               where (tmp.EntryDt >= since) && (tmp.ExitDt <= until)
-                                               select tmp;
-            ret.AddRange(past);
-            IEnumerable<ParkingSession> act = from tmp in activeSessions
-                                              where (tmp.EntryDt >= since)
-                                              select tmp;
-
-            //IEnumerator<ParkingSession> enumer = act.GetEnumerator();
-            // Set exit dates to until
-            //while(enumer.MoveNext())
-            //{
-            //    ret.Add(new ParkingSession
-            //    {
-            //        EntryDt = enumer.Current.EntryDt,
-            //        ExitDt = until,
-            //        CarPlateNumber = enumer.Current.CarPlateNumber,
-            //        TicketNumber = enumer.Current.TicketNumber
-            //    });
-            //}
-
-            ret.AddRange(act);
-
-            return ret;
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
@@ -130,24 +111,25 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns all payed parking session that are inside time interval
         /// </summary>
-        public IEnumerable<ParkingSession> GetPayedSessionsInPeriod(int userId, DateTime since, DateTime until)
+        public async Task<ResponseModel> GetPayedSessionsInPeriod(int userId, DateTime since, DateTime until)
         {
-            User usr = users.Find(u => u.Id == userId && u.UserRole == UserRole.Owner);
-            if (usr == null)
-                return null;
-            if (usr.UserRole != UserRole.Owner)
-                return null;
+            // IEnumerable<ParkingSession>
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getpayedsessionsinperiod");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {"userId", userId.ToString() },
+                {"since", since.ToString() },
+                {"until", until.ToString() }
+            }))
+            {
+                ub.Query = await content.ReadAsStringAsync();
+            }
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            ResponseModel rM = JsonConvert.DeserializeObject<ResponseModel>(resultString);
 
-            List<ParkingSession> ret = (from tmp in pastSessions
-                                              where
-                     (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until)
-                                              select tmp).ToList();
-            IEnumerable<ParkingSession> active = from tmp in activeSessions
-                                                  where (tmp.PaymentDt >= since) && (tmp.PaymentDt <= until) &&
-                                                  (tmp.PaymentDt != null) select tmp;
-
-            ret.AddRange(active);
-            return ret;
+            return rM;
         }
 
 
@@ -157,18 +139,21 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns past sessions if user is owner
         /// </summary>
-        public IEnumerable<ParkingSession> GetActiveSesstionsForOwner(int userId)
+        public async Task<ResponseModel> GetActiveSesstionsForOwner(int userId)
         {
-            bool isOwner = users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
-
-            if (isOwner)
+            // IEnumerable<ParkingSession>
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getactivesesstionsforowner");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                return activeSessions;
-            }
-            else
+                {"userId", userId.ToString() }
+            }))
             {
-                return null;
+                ub.Query = await content.ReadAsStringAsync();
             }
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
@@ -176,18 +161,21 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns All Past Sessions if user is owner
         /// </summary>
-        public IEnumerable<ParkingSession> GetPastSesstionsForOwner(int userId)
+        public async Task<ResponseModel> GetPastSesstionsForOwner(int userId)
         {
-            bool isOwner = users.Any(u => u.Id == userId && u.UserRole == UserRole.Owner);
-
-            if (isOwner)
+            // IEnumerable<ParkingSession>
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getpastsesstionsforowner");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                return pastSessions;
-            }
-            else
+                {"userId", userId.ToString() }
+            }))
             {
-                return null;
+                ub.Query = await content.ReadAsStringAsync();
             }
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
@@ -197,123 +185,120 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Gets Percentage of occupied space
         /// </summary>
-        public double GetPercentageofOccupiedSpace(int userId)
+        public async Task<ResponseModel> GetPercentageofOccupiedSpace(int userId)
         {
-            User usr = users.Find(u => u.Id == userId);
-            
-            if (usr == null)
+            // double
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getpercentageofoccupiedspace");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                return -1;
-            }
-
-            if (usr.UserRole != UserRole.Owner)
+                {"userId", userId.ToString() }
+            }))
             {
-                return -1;
+                ub.Query = await content.ReadAsStringAsync();
             }
-
-
-            double taken = activeSessions.Count;
-            double rate = taken / parkingCapacity;
-            return rate * 100.0d;
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
         /// <summary>
         /// Gets list of tariffs
         /// </summary>
-        public List<Tariff> GetTariffs()
+        public async Task<ResponseModel> GetTariffs()
         {
-            return tariffTable;
+            // List<Tariff>
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/gettariffs");
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
         /// <summary>
         /// Get completed parking sessions for user
         /// </summary>
-        public IEnumerable<ParkingSession> GetCompletedSessionsForUser(int userId)
+        public async Task<ResponseModel> GetCompletedSessionsForUser()
         {
-            // Select from pastSessions list only those sessions that are ralative to
-            // user with specified ID
-            // If query won't succeed then ret will not be null
+            // IEnumerable<ParkingSession>
+            CheckJwt();
 
-            IEnumerable<ParkingSession> ret = from tmp in pastSessions
-                                              where tmp.UserId == userId
-                                              select tmp;
-            return ret;
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getcompletedsessionsforuser");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {"userName", CurrentUser.Username }
+            }))
+            {
+                ub.Query = await content.ReadAsStringAsync();
+            }
+
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            ResponseModel rM = JsonConvert.DeserializeObject<ResponseModel>(resultString);
+            JArray dataObject = (JArray)rM.Data;
+            rM.Data = dataObject.ToObject<IList<ParkingSession>>();
+            return rM;
         }
 
-
-
-        /// <summary>
-        /// Returns User object by ID
-        /// </summary>
-        public User GetUserById(int userId)
-        {
-            User ret = users.Find(u => u.Id == userId);
-            return ret;
-        }
 
         /// <summary>
         /// Registers new user
         /// </summary>
-        public string RegisterNewUser(User usr)
+        public async Task<ResponseModel> RegisterUser(User usr)
         {
-            if (users.Count != 0)
-            {
-                bool alreadyExist = users.Any(u => u.Name == usr.Name);
-                if (alreadyExist)
-                {
-                    return "User with this name already exists";
-                }
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/account/register");
+            string json = JsonConvert.SerializeObject(usr);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            CurrentUser = usr;
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
+        }
 
-                int maxUserId = users.Max(u => u.Id);
-                usr.Id = maxUserId + 1;
-            }
-            else
-            {
-                usr.Id = 1;
-            }
-            Log.Information("New User Registered {UserName} {UserId}", usr.Name, usr.Id);
-            // Add user to users collection
-            users.Add(usr);
-            Serialize(DataPath + "\\Users.json", users);
-            return "Successfully";
+
+        public async Task<ResponseModel> RegisterOwner(OwnerRegisterModel oUsr)
+        {
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/account/registerowner");
+            string json = JsonConvert.SerializeObject(oUsr);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
         /// <summary>
         /// Login method
         /// </summary>
-        public string Login(User usr)
+        public async Task<ResponseModel> Login(User usr)
         {
-            User found = users.Find(u => u.Name == usr.Name);
-
-
-            // Authorize via phone nubmer
-            if (found == null)
+            this.CurrentUser = usr;
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/account/login");
+            string json = JsonConvert.SerializeObject(new
             {
-                found = users.Find(u => u.Phone == usr.Name);
-            }
-
-            if (found == null)
+                Username = usr.Username,
+                Password = usr.Password
+            });
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            ResponseModel rM = JsonConvert.DeserializeObject<ResponseModel>(resultString);
+            JObject jOData = (JObject)rM.Data;
+            
+            AuthResultModel aRM = jOData.ToObject<AuthResultModel>();
+            CurrentUser.CarPlateNumber = aRM.car_plate_number;
+            refreshToken.Clear();
+            for (int i = 0; i < aRM.refresh_token.Length; i++)
             {
-                Log.Information("No user was found with the provided credentials: {UserName} {Phone}", usr.Name, usr.Phone);
-                return "No user with this name was found";
+                refreshToken.AppendChar(aRM.refresh_token[i]);
             }
-
-            // Check password
-            if (usr.PasswordHash == found.PasswordHash)
-            {
-                if (found.UserRole != usr.UserRole)
-                    return "You can not authorize this account using app for " + usr.UserRole;
-                else
-                    return found.Id.ToString();
-            }
-            else
-            {
-                Log.Information("Invalid user details dupplied");
-                return "Invalid username or password";
-            }
+            expirationTime = aRM.expiration;
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", aRM.acces_token);
+            
+            return rM;
+            
         }
 
 
@@ -321,229 +306,104 @@ namespace SmartParkingApp.ClassLibrary
         /// <summary>
         /// Returns previous parking sessions for user
         /// </summary>
-        public List<ParkingSession> GetPastSessionsForUser(int userId)
+        public async Task<ResponseModel> GetPastSessionsForUser(int userId)
         {
-            List<ParkingSession> ret = (from tmp in pastSessions
-                                        where tmp.UserId == userId
-                                        select tmp).ToList();
-            return ret;
+            // List<ParkingSession>
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getpastsessionsforuser");
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
-        public ParkingSession EnterParking(string carPlateNumber)
+        public async Task<ResponseModel> EnterParking()
         {
-            if (activeSessions.Count >= parkingCapacity || activeSessions.Any(s => s.CarPlateNumber == carPlateNumber))
-                return null;
-
-            var session = new ParkingSession
+            // ParkingSession
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/enterparking");
+            string json = JsonConvert.SerializeObject(new
             {
-                CarPlateNumber = carPlateNumber,
-                EntryDt = DateTime.Now,
-                TicketNumber = nextTicketNumber++,
-                User = users.FirstOrDefault(u => u.CarPlateNumber == carPlateNumber)
-            };
-            session.UserId = session.User?.Id;
-
-            activeSessions.Add(session);
-            SaveData();
-
-            Log.Information("New parking session started {CarPlateNumber}", carPlateNumber);
-            return session;
+                CarPlateNumber = CurrentUser.CarPlateNumber,
+                TicketId = -1
+            });
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            ResponseModel responseResult = JsonConvert.DeserializeObject<ResponseModel>(resultString);
+            JObject dataObject = (JObject)responseResult.Data;
+            responseResult.Data = dataObject.ToObject<ParkingSession>();
+            return responseResult;
         }
 
 
 
-        public bool TryLeaveParkingWithTicket(int ticketNumber, ParkingSession session)
+        public async Task<ResponseModel> TryLeaveParking(int ticketNumber, ParkingSession session)
         {
-            session = GetSessionByTicketNumber(ticketNumber);
-
-            DateTime currentDt = DateTime.Now;  // Getting the current datetime only once
-
-            double diff = (currentDt - (session.PaymentDt ?? session.EntryDt)).TotalMinutes;
-            if (diff <= freeLeavePeriod)
+            // bool
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/tryleaveparking");
+            string json = JsonConvert.SerializeObject(new
             {
-                session.TotalPayment = 0;
-                CompleteSession(session, currentDt);
-                return true;
-            }
-            else
-            {
-                session = null;
-                return false;
-            }
+                CarPlateNumber = session.CarPlateNumber,
+                TicketId = ticketNumber
+            });
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
 
         /// <summary>
         /// Calculates remaining parking cost
         /// </summary>
-        public decimal GetRemainingCost(int ticketNumber)
+        public async Task<ResponseModel> GetRemainingCost(int ticketNumber)
         {
-            DateTime currentDt = DateTime.Now;
-            ParkingSession session = GetSessionByTicketNumber(ticketNumber);
-
-            double diff = (currentDt - (session.PaymentDt ?? session.EntryDt)).TotalMinutes;
-            return GetCost(diff);
-        }
-
-
-        public void PayForParking(int ticketNumber, decimal amount)
-        {
-            ParkingSession session = GetSessionByTicketNumber(ticketNumber);
-            session.TotalPayment = (session.TotalPayment ?? 0) + amount;
-            session.PaymentDt = DateTime.Now;
-            SaveData();
-        }
-
-        public bool TryLeaveParkingByCarPlateNumber(string carPlateNumber, ParkingSession session)
-        {
-            session = activeSessions.FirstOrDefault(s => s.CarPlateNumber == carPlateNumber);
-            if (session == null)
-                return false;
-
-            DateTime currentDt = DateTime.Now;
-
-            if (session.PaymentDt != null)
+            // decimal
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/getremainingcost");
+            using (var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                if ((currentDt - session.PaymentDt.Value).TotalMinutes <= freeLeavePeriod)
-                {
-                    CompleteSession(session, currentDt);
-                    Log.Information("Parking session completed successfully {SessionEntryDate} {SessionExitDate} {TotalPayment}", 
-                        session.EntryDt, session.ExitDt, session.TotalPayment);
-                    return true;
-                }
-                else
-                {
-                    session = null;
-                    return false;
-                }
+                {"userName", CurrentUser.Username }
+            }))
+            {
+                ub.Query = await content.ReadAsStringAsync();
             }
-            else
+            HttpResponseMessage response = await client.GetAsync(ub.Uri);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
+        }
+
+
+        public async Task<ResponseModel> PayForParking(int ticketNumber, string carPlateNumber)
+        {
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/payforparking");
+            string json = JsonConvert.SerializeObject(new
             {
-                // No payment, within free leave period -> allow exit
-                if ((currentDt - session.EntryDt).TotalMinutes <= freeLeavePeriod)
-                {
-                    session.TotalPayment = 0;
-                    Log.Information("Parking session completed successfully {SessionEntryDate} {SessionExitDate}",
-                       session.EntryDt, session.ExitDt);
-
-                   CompleteSession(session, currentDt);
-                    return true;
-                }
-                else
-                {
-                    // The session has no connected customer
-                    if (session.User == null)
-                    {
-                        session = null;
-                        return false;
-                    }
-                    else
-                    {
-                        session.TotalPayment = GetCost((currentDt - session.EntryDt).TotalMinutes - freeLeavePeriod);
-                        session.PaymentDt = currentDt;
-                        CompleteSession(session, currentDt);
-                        return true;
-                    }
-                }
-            }
+                CarPlateNumber = carPlateNumber,
+                TicketId = ticketNumber
+            });
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
 
-
-
-
-        #region Helper methods
-        private ParkingSession GetSessionByTicketNumber(int ticketNumber)
+        public async Task<ResponseModel> TryLeaveParkingByCarPlateNumber(string carPlateNumber, ParkingSession session)
         {
-            var session = activeSessions.FirstOrDefault(s => s.TicketNumber == ticketNumber);
-            if (session == null)
-                throw new ArgumentException($"Session with ticket number = {ticketNumber} does not exist");
-            return session;
-        }
-
-        private decimal GetCost(double diffInMinutes)
-        {
-            var tariff = tariffTable.FirstOrDefault(t => t.Minutes >= diffInMinutes) ?? tariffTable.Last();
-            return tariff.Rate;
-        }
-
-        private T Deserialize<T>(string fileName)
-        {
-            using (var sr = new StreamReader(fileName))
+            // bool
+            CheckJwt();
+            UriBuilder ub = new UriBuilder(rootUrl + "/api/parking/tryleaveparkingbycarplatenumber");
+            string json = JsonConvert.SerializeObject(new
             {
-                using (var jsonReader = new JsonTextReader(sr))
-                {
-                    var serializer = new JsonSerializer();
-                    return serializer.Deserialize<T>(jsonReader);
-                }
-            }
+                CarPlateNumber = carPlateNumber,
+                TicketId = session.TicketNumber
+            });
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(ub.Uri, data);
+            string resultString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ResponseModel>(resultString);
         }
-
-        private void Serialize<T>(string fileName, T data)
-        {
-            using (StreamWriter sw = new StreamWriter(fileName))
-            {
-                using (JsonTextWriter jsonWriter = new JsonTextWriter(sw))
-                {
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Formatting = Formatting.Indented;
-                    serializer.Serialize(jsonWriter, data);
-                }
-            }
-        }
-
-        private class ParkingData
-        {
-            public List<ParkingSession> PastSessions { get; set; }
-            public List<ParkingSession> ActiveSessions { get; set; }
-            public int Capacity { get; set; }
-        }
-
-
-        private void LoadData()
-        {
-            tariffTable = Deserialize<List<Tariff>>(DataPath + "\\Tariffs.json") ?? new List<Tariff>();
-            ParkingData data = Deserialize<ParkingData>(DataPath + "\\ParkingData.json");
-            users = Deserialize<List<User>>(DataPath + "\\Users.json") ?? new List<User>();
-
-            if (data != null)
-            {
-                parkingCapacity = data.Capacity;
-                pastSessions = (data.PastSessions == null) ? new List<ParkingSession>() : data.PastSessions;
-                activeSessions = (data.ActiveSessions == null) ? new List<ParkingSession>() : data.ActiveSessions;
-            }
-            else
-            {
-                parkingCapacity = 0;
-                pastSessions = new List<ParkingSession>();
-                activeSessions = new List<ParkingSession>();
-            }
-            if (tariffTable.Count != 0)
-                freeLeavePeriod = tariffTable.First().Minutes;
-            else
-                freeLeavePeriod = 0;
-
-            nextTicketNumber = activeSessions.Count > 0 ? activeSessions.Max(s => s.TicketNumber) + 1 : 1;
-        }
-
-        private void SaveData()
-        {
-            ParkingData data = new ParkingData
-            {
-                Capacity = parkingCapacity,
-                ActiveSessions = activeSessions,
-                PastSessions = pastSessions
-            };
-
-            Serialize(DataPath + "\\ParkingData.json", data);
-        }
-
-        private void CompleteSession(ParkingSession session, DateTime currentDt)
-        {
-            session.ExitDt = currentDt;
-            activeSessions.Remove(session);
-            pastSessions.Add(session);
-            SaveData();
-        }
-        #endregion
     }
 }

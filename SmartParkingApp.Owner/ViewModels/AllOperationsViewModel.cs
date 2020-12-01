@@ -53,9 +53,9 @@ namespace SmartParkingApp.Owner.ViewModels
             _pk = pk;
             _userId = userId;
 
-            IEnumerable<ParkingSession> past = _pk.GetPastSesstionsForOwner(_userId);
-            IEnumerable<ParkingSession> active = _pk.GetActiveSesstionsForOwner(_userId);
-
+            List<ParkingSession> past = null; 
+            List<ParkingSession> active = null;
+            GetSessions(active, past);
             PastSessions = new ObservableCollection<ParkingSession>(past);
             ActiveSessions = new ObservableCollection<ParkingSession>(active);
 
@@ -64,6 +64,15 @@ namespace SmartParkingApp.Owner.ViewModels
             AllSessions = new ObservableCollection<ParkingSession>(tmp);
             Sessions = AllSessions;
 
+        }
+
+        private async void GetSessions(List<ParkingSession> active, List<ParkingSession> past)
+        {
+            ResponseModel responseActive = await _pk.GetPastSesstionsForOwner(_userId);
+            ResponseModel responsePast = await _pk.GetActiveSesstionsForOwner(_userId);
+
+            active = (List<ParkingSession>)responseActive.Data;
+            past = (List<ParkingSession>)responsePast.Data;
         }
 
 

@@ -3,12 +3,21 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:SmartParkingApp.Client.Pages"
+      xmlns:local="clr-namespace:SmartParkingApp.Client.Pages" xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks" xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="CompletedOperations">
     <Grid Background="Transparent">
-        <ListView Name="ParkingSession" Background="Transparent" FontFamily="Arial">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="41"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Grid.Row="0" Margin="0, 3, 0, 3" HorizontalAlignment="Left" IsEnabled="{Binding RenewEnabled, Mode=OneWay}"
+                Style="{StaticResource ActionButton}"
+                Command="{Binding RenewCommand}" Width="60" Height="35" FontSize="20">
+            <iconPacks:PackIconMaterial Kind="Reload" />
+        </Button>
+        <ListView Grid.Row="1" Name="ParkingSession" Background="Transparent" FontFamily="Arial">
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=TicketNumber}">
